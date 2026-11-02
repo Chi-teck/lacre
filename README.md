@@ -135,7 +135,8 @@ The PowerShell details in this section have not been checked on a Windows machin
 
 When standard input is a terminal, `lacre build` does not wait for typed input: it prints a hint and exits with 2. In
 Git Bash (mintty), lacre cannot tell that standard input is a terminal, so it waits for input, as `cat` does. Ctrl+D
-ends the input.
+ends the input. On systems other than Linux, macOS and Windows, such as FreeBSD, lacre does not check at all and waits
+the same way.
 
 ## Development
 
