@@ -15,4 +15,5 @@ as `lacre v0.0.0-SNAPSHOT-<commit>` before the first tag.
 
 On every push to a branch and on every pull request, continuous integration (CI) runs the checks of `task check` and the
 build on Linux, and the tests and the build on Windows. No job runs on macOS: the macOS build is cross-compiled and
-vetted, never run. A `v*` tag runs the same checks, then publishes a release with GoReleaser.
+vetted, never run. A `v*` tag runs the same checks, then publishes a release with GoReleaser. CI uses a fixed Go minor
+line, at its newest patch, and a fixed golangci-lint version, and the two are bumped together.

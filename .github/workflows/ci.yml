@@ -27,13 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # The newest stable Go, not go-version-file: go.mod. The go line there is
-      # the minimum for users; read as a version, 1.26.0 would install exactly
-      # 1.26.0, without the standard library fixes made since. setup-go caches
-      # the module and build caches on its own.
+      # A Go minor line rather than stable: the golangci-lint below is a binary
+      # built with one Go, and a newer Go can leave it unable to load the
+      # standard library, which turns CI red on code nobody changed. '1.27'
+      # still installs a current 1.27 patch. Not go-version-file: go.mod, whose
+      # go line is the minimum for users and would install exactly 1.26.0. Bump
+      # the line together with golangci-lint: here, in the windows job and in
+      # release.yml. setup-go caches the module and build caches on its own.
       - uses: actions/setup-go@v7
         with:
-          go-version: stable
+          go-version: '1.27'
 
       # `gofmt -l` reports offending files and still exits 0, so the file list
       # has to be the failure condition.
@@ -74,7 +77,8 @@ jobs:
 
       # Pinned rather than floating: a lint release adds checks, and CI going
       # red on a commit that passed locally is the wrong way to learn that.
-      # Bump this together with the locally installed golangci-lint.
+      # Bump this together with the Go line above, to a release built with
+      # that Go, and with the locally installed golangci-lint.
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
@@ -101,9 +105,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The same Go line as the check job.
       - uses: actions/setup-go@v7
         with:
-          go-version: stable
+          go-version: '1.27'
 
       - name: go test
         run: go test ./...

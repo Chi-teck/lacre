@@ -33,9 +33,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # The Go line ci.yml checks with, so the archives are built with the Go
+      # the gate tested.
       - uses: actions/setup-go@v7
         with:
-          go-version: stable
+          go-version: '1.27'
 
       - uses: goreleaser/goreleaser-action@v7
         with:
