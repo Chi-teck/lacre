@@ -20,7 +20,7 @@ import (
 const usage = `lacre turns plain text or an HTML snippet into a full HTML page.
 
 Usage:
-  lacre build [options] < input > page.gohtml
+  lacre build [options] < input > page.html
   lacre --help
   lacre --version
 
@@ -39,8 +39,8 @@ Environment:
 
 Examples:
   echo 'Hello world!' | lacre build > hello-world.html
-  lacre build --title 'My page' --lang en < snippet.html > page.gohtml
-  lacre build --head "$(cat head.html)" < snippet.html > page.gohtml
+  lacre build --title 'My page' --lang en < snippet.html > page.html
+  lacre build --head "$(cat head.html)" < snippet.html > page.html
 `
 
 // terminalHint is what lacre build prints, without the usage, when standard
