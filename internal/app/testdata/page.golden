@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content="Lacre" />
+<title>Untitled</title>
+<style>
+body {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+pre {
+  font-family: ui-monospace, monospace;
+  font-size: 0.875em;
+  white-space: pre-wrap;
+}
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+</style>
+</head>
+<body>
+<h1>Hello</h1>
+<p>Hello <b>world</b> &amp; friends!</p>
+</body>
+</html>
