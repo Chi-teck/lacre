@@ -16,12 +16,15 @@ builds:
   # CGO_ENABLED=0 keeps the binaries static, so every target below
   # cross-compiles from the Linux runner. -trimpath keeps the build machine's
   # paths out of them.
+  # The version is stamped as v{{ .Version }}, the v1.0.0 that `go install` and
+  # a `go build` at the tag print; {{ .Tag }} would say the same in a release,
+  # but in a --snapshot it is the last tag, not the commit being built.
   - env:
       - 'CGO_ENABLED=0'
     goos: ['linux', 'darwin', 'windows']
     goarch: ['amd64', 'arm64']
     flags: ['-trimpath']
-    ldflags: ['-s -w']
+    ldflags: ['-s -w', '-X github.com/Chi-teck/lacre/internal/app.version=v{{ .Version }}']
 
 archives:
   # Windows users expect a zip; everyone else gets a tar.gz.

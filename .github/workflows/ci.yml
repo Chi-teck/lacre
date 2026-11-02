@@ -1,0 +1,100 @@
+# The pre-commit gate, run on GitHub: gofmt, go vet, golangci-lint, go test —
+# plus the documented build. The same checks as `task check`, spelled out
+# here rather than shelled through Task so a failure names the step that failed
+# and no extra tool has to be installed on the runner. Keep the two in step.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  # release.yml runs this gate before it publishes anything.
+  workflow_call:
+
+# Nothing here writes to the repository.
+permissions:
+  contents: read
+
+# A new push supersedes the run still in flight for the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The newest stable Go, not go-version-file: go.mod. The go line there is
+      # the minimum for users; read as a version, 1.26.0 would install exactly
+      # 1.26.0, without the standard library fixes made since. setup-go caches
+      # the module and build caches on its own.
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+
+      # `gofmt -l` reports offending files and still exits 0, so the file list
+      # has to be the failure condition.
+      - name: gofmt
+        run: |
+          files=$(gofmt -l .)
+          if [ -n "$files" ]; then
+            echo "not gofmt'd:"
+            echo "$files"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      # The terminal check has a file of its own for macOS, and nothing else
+      # compiles it before a release: macOS builds are cross-compiled, never run.
+      - name: go vet darwin/arm64
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: go vet ./...
+
+      # Pinned rather than floating: a lint release adds checks, and CI going
+      # red on a commit that passed locally is the wrong way to learn that.
+      # Bump this together with the locally installed golangci-lint.
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+
+      # Golden files under testdata/ fix the expected output; regenerate them
+      # with `task test:update` when a change to the rendering is intended.
+      - name: go test
+        run: go test ./...
+
+      # CGO_ENABLED=0 is the documented build: it keeps the binary static.
+      - name: build
+        env:
+          CGO_ENABLED: '0'
+        run: go build -o lacre .
+
+  # The release ships a windows archive, and the two things that could break it
+  # there — the console check, which must not take NUL or a pipe for a console,
+  # and a golden file compared byte for byte — only fail on a windows runner.
+  # Tests and build only: gofmt, vet and lint run on Linux, and go test runs a
+  # part of vet over the windows-only file here.
+  windows:
+    name: windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+
+      - name: go test
+        run: go test ./...
+
+      - name: build
+        env:
+          CGO_ENABLED: '0'
+        run: go build -o lacre.exe .
