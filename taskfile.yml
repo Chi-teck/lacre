@@ -2,7 +2,8 @@
 version: '3'
 
 vars:
-  BINARY: lacre
+  # exeExt is .exe on Windows, which runs no program without it.
+  BINARY: 'lacre{{exeExt}}'
 
 tasks:
   default:
@@ -45,11 +46,16 @@ tasks:
       - 'go test ./... -update'
       - 'go test ./...'
 
+  # The terminal check has a file per system, and go vet and golangci-lint
+  # see only the one for the system they run on. FreeBSD stands in for every
+  # system without a check of its own, which no release builds.
   lint:
     desc: 'Run go vet and golangci-lint'
     cmds:
       - 'go vet ./...'
       - 'GOOS=darwin GOARCH=arm64 go vet ./...'
+      - 'GOOS=windows GOARCH=amd64 go vet ./...'
+      - 'GOOS=freebsd GOARCH=amd64 go vet ./...'
       - 'golangci-lint run'
 
   fmt:

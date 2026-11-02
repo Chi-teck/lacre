@@ -57,6 +57,21 @@ jobs:
           GOARCH: arm64
         run: go vet ./...
 
+      # The windows job below runs only go test, which runs a part of vet.
+      - name: go vet windows/amd64
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: go vet ./...
+
+      # FreeBSD stands in for every system without a terminal check of its own:
+      # no release builds for them, and go install there has to keep working.
+      - name: go vet freebsd/amd64
+        env:
+          GOOS: freebsd
+          GOARCH: amd64
+        run: go vet ./...
+
       # Pinned rather than floating: a lint release adds checks, and CI going
       # red on a commit that passed locally is the wrong way to learn that.
       # Bump this together with the locally installed golangci-lint.
@@ -79,8 +94,7 @@ jobs:
   # The release ships a windows archive, and the two things that could break it
   # there — the console check, which must not take NUL or a pipe for a console,
   # and a golden file compared byte for byte — only fail on a windows runner.
-  # Tests and build only: gofmt, vet and lint run on Linux, and go test runs a
-  # part of vet over the windows-only file here.
+  # Tests and build only: gofmt, vet and lint run on Linux, vet for windows too.
   windows:
     name: windows
     runs-on: windows-latest

@@ -3,9 +3,9 @@
 The commands below need [Task](https://taskfile.dev); `task` alone lists all the tasks.
 
 ```bash
-task check              # gofmt, go vet (also for macOS), golangci-lint, go test: the check before a commit
+task check              # gofmt, go vet (also for other systems), golangci-lint, go test: the check before a commit
 task test:update        # rewrite the golden files, then run the tests again
-task build              # CGO_ENABLED=0 go build -o lacre .
+task build              # CGO_ENABLED=0 go build -o lacre . (lacre.exe on Windows)
 task release:snapshot   # build the release archives into dist/, published nowhere
 ```
 
