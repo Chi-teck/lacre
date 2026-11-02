@@ -1,0 +1,82 @@
+# $schema: https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  BINARY: lacre
+
+tasks:
+  default:
+    desc: 'List available tasks'
+    cmds:
+      - 'task --list'
+    silent: true
+
+  # CGO_ENABLED=0 keeps the binary static.
+  #
+  # No sources/generates fingerprint: `go build` is already incremental, and a
+  # fingerprint that ignores build env reports "up to date" when it is not.
+  build:
+    desc: 'Build the binary into ./{{.BINARY}} (static)'
+    env:
+      CGO_ENABLED: '0'
+    cmds:
+      - 'go build -o {{.BINARY}} .'
+
+  run:
+    desc: 'Run lacre (e.g. `task run -- build --title Demo < page.html`)'
+    cmds:
+      - 'go run . {{.CLI_ARGS}}'
+
+  # Everything a v* tag would publish, built into ./dist and published
+  # nowhere. Needs goreleaser on PATH; CI installs its own.
+  release:snapshot:
+    desc: 'Build the release archives locally without publishing'
+    cmds:
+      - 'goreleaser release --snapshot --clean'
+
+  test:
+    desc: 'Run tests (golden files under testdata/)'
+    cmds:
+      - 'go test ./...'
+
+  test:update:
+    desc: 'Regenerate the golden files, then re-run the tests'
+    cmds:
+      - 'go test ./... -update'
+      - 'go test ./...'
+
+  lint:
+    desc: 'Run go vet and golangci-lint'
+    cmds:
+      - 'go vet ./...'
+      - 'GOOS=darwin GOARCH=arm64 go vet ./...'
+      - 'golangci-lint run'
+
+  fmt:
+    desc: 'Format the code (gofmt)'
+    cmds:
+      - 'gofmt -w .'
+
+  fmt:check:
+    desc: 'Fail if the code is not formatted (prints the offending files)'
+    cmds:
+      - 'gofmt -l .'
+      - 'test -z "$(gofmt -l .)"'
+
+  tidy:
+    desc: 'Tidy go.mod and go.sum'
+    cmds:
+      - 'go mod tidy'
+
+  check:
+    desc: 'Verify formatting, lint, and tests (pre-commit gate)'
+    cmds:
+      - task: 'fmt:check'
+      - task: 'lint'
+      - task: 'test'
+
+  clean:
+    desc: 'Remove build artifacts'
+    cmds:
+      - 'rm -f {{.BINARY}}'
+      - 'rm -rf dist'

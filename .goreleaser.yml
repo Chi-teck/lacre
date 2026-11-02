@@ -1,0 +1,43 @@
+# Release build for lacre — https://goreleaser.com
+#
+# Driven by .github/workflows/release.yml on a v* tag. To see what a release
+# would produce without tagging or publishing anything:
+#
+#   goreleaser release --snapshot --clean
+version: 2
+
+project_name: lacre
+
+before:
+  hooks:
+    - 'go mod download'
+
+builds:
+  # CGO_ENABLED=0 keeps the binaries static, so every target below
+  # cross-compiles from the Linux runner. -trimpath keeps the build machine's
+  # paths out of them.
+  - env:
+      - 'CGO_ENABLED=0'
+    goos: ['linux', 'darwin', 'windows']
+    goarch: ['amd64', 'arm64']
+    flags: ['-trimpath']
+    ldflags: ['-s -w']
+
+archives:
+  # Windows users expect a zip; everyone else gets a tar.gz.
+  - formats: ['tar.gz']
+    format_overrides:
+      - goos: 'windows'
+        formats: ['zip']
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  use: 'github'
+  sort: 'asc'
+
+release:
+  # A tag carrying a pre-release suffix (v1.0.0-rc1) is published as one.
+  prerelease: 'auto'
