@@ -1,0 +1,20 @@
+lacre turns plain text or an HTML snippet into a full HTML page.
+
+Usage:
+  lacre build [options] < input > page.html
+  lacre --help
+  lacre --version
+
+The build command reads standard input and writes the page to standard
+output. The input goes into the page as it is, as HTML.
+
+Options for build:
+  --title TEXT   page title (default "Untitled")
+  --lang CODE    page language, such as "en" (default: none)
+  --head HTML    HTML to add at the end of <head>, as it is; can be
+                 given more than once
+
+Examples:
+  echo 'Hello world!' | lacre build > hello-world.html
+  lacre build --title 'My page' --lang en < snippet.html > page.html
+  lacre build --head "$(cat head.html)" < snippet.html > page.html
