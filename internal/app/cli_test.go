@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 	"testing/iotest"
+	"text/template"
 )
 
 // TestMain lets TestProgram run the real program: started with
@@ -124,6 +125,23 @@ func TestCommandLine(t *testing.T) {
 		if code != c.code {
 			t.Errorf("lacre %q: the exit code is %d, want %d", c.args, code, c.code)
 		}
+	}
+}
+
+// A broken built-in theme is named as such, not by an empty directory. The
+// embedded theme cannot be broken from a test, so the test gives themeError a
+// template error of its own.
+func TestThemeErrorBuiltin(t *testing.T) {
+	_, err := template.New("page.gohtml").Parse("<p>\n{{foo}}\n")
+	if err == nil {
+		t.Fatal("the template parsed, want an error")
+	}
+	var stderr bytes.Buffer
+	if code := themeError(&stderr, "", err); code != 2 {
+		t.Errorf("the exit code is %d, want 2", code)
+	}
+	if want := `lacre: built-in theme: page.gohtml:2: function "foo" not defined` + "\n"; stderr.String() != want {
+		t.Errorf("standard error is %q, want %q", stderr.Bytes(), want)
 	}
 }
 

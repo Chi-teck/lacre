@@ -148,11 +148,18 @@ func commandLineError(stderr io.Writer, msg string) int {
 }
 
 // themeError prints a theme error to standard error: the line
-// "lacre: theme <dir>: <err>", with no usage after it, since the command line
-// was right. A template error loses only its "template: " prefix. It gives
-// exit code 2.
+// "lacre: theme <dir>: <err>", or "lacre: built-in theme: <err>" when dir is
+// empty, with no usage after it, since the command line was right. A template
+// error loses only its "template: " prefix. It gives exit code 2.
+//
+// An empty dir is the built-in theme, which has no directory to name. Naming
+// it keeps whoever changes it from looking for the mistake in LACRE_THEME.
 func themeError(stderr io.Writer, dir string, err error) int {
-	_, _ = fmt.Fprintf(stderr, "lacre: theme %s: %s\n", dir, strings.TrimPrefix(err.Error(), "template: "))
+	name := "theme " + dir
+	if dir == "" {
+		name = "built-in theme"
+	}
+	_, _ = fmt.Fprintf(stderr, "lacre: %s: %s\n", name, strings.TrimPrefix(err.Error(), "template: "))
 	return 2
 }
 
