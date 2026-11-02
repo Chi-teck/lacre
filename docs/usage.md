@@ -76,15 +76,16 @@ Before the command, the only options are `--help` (or `-h`) and `--version`: `la
 
 ## Exit codes
 
-| Code | When                                                                                                                          |
-|------|-------------------------------------------------------------------------------------------------------------------------------|
-| 0    | The page was written, or the usage or version was printed                                                                     |
-| 1    | Reading standard input or writing standard output failed                                                                      |
-| 2    | The tool was called wrongly: no command, an unknown command, a bad option, an argument, a terminal as input, or a broken skin |
+| Code | When                                                                                                                                                      |
+|------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0    | The page was written, or the usage or version was printed                                                                                                 |
+| 1    | Reading standard input or writing standard output failed                                                                                                  |
+| 2    | The tool was called wrongly: no command, an unknown command, a bad option, an argument, a terminal or another character device as input, or a broken skin |
 
 ## Known limits
 
-When standard input is a terminal, `lacre build` does not wait for typed input: it prints a hint and exits with 2. In
-Git Bash (mintty), lacre cannot tell that standard input is a terminal, so it waits for input, as `cat` does. Ctrl+D
-ends the input. On systems other than Linux, macOS and Windows, such as FreeBSD, lacre does not check at all and waits
-the same way.
+When standard input is a terminal, `lacre build` does not wait for typed input: it prints a hint and exits with 2. On
+Linux, macOS and other Unix systems, lacre takes any character device other than `/dev/null` for a terminal, so it
+refuses `/dev/zero` or `/dev/urandom` the same way. In Git Bash (mintty), lacre cannot tell that standard input is a
+terminal, so it waits for input, as `cat` does. Ctrl+D ends the input. On systems that are neither Unix nor Windows,
+such as Plan 9, lacre does not check at all and waits the same way.

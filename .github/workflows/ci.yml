@@ -52,8 +52,8 @@ jobs:
       - name: go vet
         run: go vet ./...
 
-      # The terminal check has a file of its own for macOS, and nothing else
-      # compiles it before a release: macOS builds are cross-compiled, never run.
+      # The release ships macOS builds, and nothing else compiles them before
+      # a release: they are cross-compiled, never run.
       - name: go vet darwin/arm64
         env:
           GOOS: darwin
@@ -67,11 +67,12 @@ jobs:
           GOARCH: amd64
         run: go vet ./...
 
-      # FreeBSD stands in for every system without a terminal check of its own:
-      # no release builds for them, and go install there has to keep working.
-      - name: go vet freebsd/amd64
+      # Plan 9 stands in for every system without a terminal check, neither
+      # Unix nor Windows: no release builds for them, and go install there has
+      # to keep working.
+      - name: go vet plan9/amd64
         env:
-          GOOS: freebsd
+          GOOS: plan9
           GOARCH: amd64
         run: go vet ./...
 

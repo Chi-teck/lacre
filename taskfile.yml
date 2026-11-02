@@ -46,16 +46,16 @@ tasks:
       - 'go test ./... -update'
       - 'go test ./...'
 
-  # The terminal check has a file per system, and go vet and golangci-lint
-  # see only the one for the system they run on. FreeBSD stands in for every
-  # system without a check of its own, which no release builds.
+  # The terminal check has a file for Unix, one for Windows and one for the
+  # rest, and go vet and golangci-lint see only the one for the system they
+  # run on. Plan 9 stands in for the rest, which no release builds.
   lint:
     desc: 'Run go vet and golangci-lint'
     cmds:
       - 'go vet ./...'
       - 'GOOS=darwin GOARCH=arm64 go vet ./...'
       - 'GOOS=windows GOARCH=amd64 go vet ./...'
-      - 'GOOS=freebsd GOARCH=amd64 go vet ./...'
+      - 'GOOS=plan9 GOARCH=amd64 go vet ./...'
       - 'golangci-lint run'
 
   fmt:
