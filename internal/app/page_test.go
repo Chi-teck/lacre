@@ -38,16 +38,16 @@ func checkGolden(t *testing.T, name string, got []byte) {
 	}
 }
 
-// builtinPage builds the page with the built-in skin, and fails the test on
+// builtinPage builds the page with the built-in theme, and fails the test on
 // any error.
 func builtinPage(t *testing.T, input []byte, title, lang string, heads []string) []byte {
 	t.Helper()
-	s, err := openSkin("")
+	th, err := openTheme("")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Close()
-	page, err := buildPage(s, input, title, lang, heads)
+	defer th.Close()
+	page, err := buildPage(th, input, title, lang, heads)
 	if err != nil {
 		t.Fatal(err)
 	}

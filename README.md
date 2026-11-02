@@ -40,6 +40,6 @@ only on input you trust.
 ## Documentation
 
 - [Usage](docs/usage.md): the page lacre builds, the options, the input, exit codes and known limits
-- [Skins](docs/skins.md): replacing the built-in page with your own layout, styles and fonts
+- [Themes](docs/themes.md): replacing the built-in page with your own layout, styles and fonts
 - [Windows](docs/windows.md): `cmd.exe`, PowerShell and Git Bash
 - [Development](docs/development.md): tasks, tests, CI and releases

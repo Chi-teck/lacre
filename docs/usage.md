@@ -10,13 +10,13 @@ The page is a complete HTML document. Its head has the UTF-8 charset, a viewport
 screen, a generator tag that names lacre, the title (`Untitled` without `--title`) and a small built-in stylesheet,
 which gives a centred column that is easy to read, the system fonts, long lines in `<pre>` that wrap, and images and
 videos that shrink to fit the column. Its body is your input, as it is, between two markers. That is the page of the
-built-in skin, and a [skin](skins.md) of your own can change all of it. With the built-in skin, nothing lacre adds
+built-in theme, and a [theme](themes.md) of your own can change all of it. With the built-in theme, nothing lacre adds
 refers to anything outside the page, so the page is a single file that works offline, unless what you put in it refers
-to outside files. The same input, options and skin always give the same bytes.
+to outside files. The same input, options and theme always give the same bytes.
 
 lacre writes `<!-- lacre:begin -->` and a line break before the input and `<!-- lacre:end -->` right after it, with no
 line break added, so that the input can be found in the page. lacre does not check for the same text elsewhere: in the
-input, in a `--head` value or in a skin. With `echo 'Hello world!' | lacre build`, the end of the page is:
+input, in a `--head` value or in a theme. With `echo 'Hello world!' | lacre build`, the end of the page is:
 
 ```html
 <body>
@@ -76,11 +76,11 @@ Before the command, the only options are `--help` (or `-h`) and `--version`: `la
 
 ## Exit codes
 
-| Code | When                                                                                                                                                      |
-|------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0    | The page was written, or the usage or version was printed                                                                                                 |
-| 1    | Reading standard input or writing standard output failed                                                                                                  |
-| 2    | The tool was called wrongly: no command, an unknown command, a bad option, an argument, a terminal or another character device as input, or a broken skin |
+| Code | When                                                                                                                                                       |
+|------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0    | The page was written, or the usage or version was printed                                                                                                  |
+| 1    | Reading standard input or writing standard output failed                                                                                                   |
+| 2    | The tool was called wrongly: no command, an unknown command, a bad option, an argument, a terminal or another character device as input, or a broken theme |
 
 ## Known limits
 

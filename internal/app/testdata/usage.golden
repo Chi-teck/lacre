@@ -15,7 +15,7 @@ Options for build:
                  given more than once
 
 Environment:
-  LACRE_SKIN     a skin directory, whose page.gohtml is the page template;
+  LACRE_THEME    a theme directory, whose page.gohtml is the page template;
                  when unset or empty, lacre uses its built-in page
 
 Examples:

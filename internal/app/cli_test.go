@@ -27,17 +27,17 @@ func TestMain(m *testing.M) {
 // terminal.
 func notTerminal() bool { return false }
 
-// lacre calls run with the built-in skin, input as standard input and a
+// lacre calls run with the built-in theme, input as standard input and a
 // terminal check that says "not a terminal", and gives what it wrote to each
 // stream and its exit code.
 func lacre(input string, args ...string) (stdout, stderr string, code int) {
-	return lacreSkin("", input, args...)
+	return lacreTheme("", input, args...)
 }
 
-// lacreSkin is lacre with skinDir as the value of LACRE_SKIN.
-func lacreSkin(skinDir, input string, args ...string) (stdout, stderr string, code int) {
+// lacreTheme is lacre with themeDir as the value of LACRE_THEME.
+func lacreTheme(themeDir, input string, args ...string) (stdout, stderr string, code int) {
 	var out, errOut bytes.Buffer
-	code = run(args, skinDir, strings.NewReader(input), &out, &errOut, notTerminal)
+	code = run(args, themeDir, strings.NewReader(input), &out, &errOut, notTerminal)
 	return out.String(), errOut.String(), code
 }
 
@@ -209,9 +209,9 @@ func TestTerminal(t *testing.T) {
 // a terminal for one. On Windows this runs GetConsoleMode on NUL and on a
 // pipe.
 //
-// The child gets an empty LACRE_SKIN, so that one set where the tests run does
+// The child gets an empty LACRE_THEME, so that one set where the tests run does
 // not reach it, and the first two cases check that an empty one gives the
-// built-in page. The last sets it to a skin directory relative to the child's
+// built-in page. The last sets it to a theme directory relative to the child's
 // working directory, which covers Main reading the variable.
 func TestProgram(t *testing.T) {
 	exe, err := os.Executable()
@@ -222,21 +222,21 @@ func TestProgram(t *testing.T) {
 		name  string
 		stdin io.Reader // nil gives the child os.DevNull
 		input string    // what the in-process call gets
-		skin  bool      // LACRE_SKIN names a skin relative to the child's directory
+		theme bool      // LACRE_THEME names a theme relative to the child's directory
 	}{
 		{"os.DevNull", nil, "", false},
 		{"pipe", strings.NewReader("Hello world!\n"), "Hello world!\n", false},
-		{"relative LACRE_SKIN", strings.NewReader("Hello world!\n"), "Hello world!\n", true},
+		{"relative LACRE_THEME", strings.NewReader("Hello world!\n"), "Hello world!\n", true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			cmd := exec.Command(exe, "build")
-			cmd.Env = append(os.Environ(), "LACRE_TEST_BE_LACRE=1", "LACRE_SKIN=")
-			var skinDir string
-			if c.skin {
-				skinDir = writeSkin(t, map[string]string{"page.gohtml": "<p>{{.Title}}</p>\n{{.Body}}\n"})
-				cmd.Dir = filepath.Dir(skinDir)
-				cmd.Env = append(cmd.Env, "LACRE_SKIN="+filepath.Base(skinDir))
+			cmd.Env = append(os.Environ(), "LACRE_TEST_BE_LACRE=1", "LACRE_THEME=")
+			var themeDir string
+			if c.theme {
+				themeDir = writeTheme(t, map[string]string{"page.gohtml": "<p>{{.Title}}</p>\n{{.Body}}\n"})
+				cmd.Dir = filepath.Dir(themeDir)
+				cmd.Env = append(cmd.Env, "LACRE_THEME="+filepath.Base(themeDir))
 			}
 			cmd.Stdin = c.stdin
 			var stdout, stderr bytes.Buffer
@@ -247,7 +247,7 @@ func TestProgram(t *testing.T) {
 			if stderr.Len() != 0 {
 				t.Errorf("standard error is %q, want nothing", stderr.Bytes())
 			}
-			want, _, _ := lacreSkin(skinDir, c.input, "build")
+			want, _, _ := lacreTheme(themeDir, c.input, "build")
 			if stdout.String() != want {
 				t.Errorf("standard output is %q, want %q", stdout.Bytes(), want)
 			}
