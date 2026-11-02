@@ -1,0 +1,17 @@
+body {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+pre {
+  font-family: ui-monospace, monospace;
+  font-size: 0.875em;
+  white-space: pre-wrap;
+}
+img, video {
+  max-width: 100%;
+  height: auto;
+}

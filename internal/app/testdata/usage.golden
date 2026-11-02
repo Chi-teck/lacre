@@ -14,6 +14,10 @@ Options for build:
   --head HTML    HTML to add at the end of <head>, as it is; can be
                  given more than once
 
+Environment:
+  LACRE_SKIN     a skin directory, whose page.html is the page template;
+                 when unset or empty, lacre uses its built-in page
+
 Examples:
   echo 'Hello world!' | lacre build > hello-world.html
   lacre build --title 'My page' --lang en < snippet.html > page.html

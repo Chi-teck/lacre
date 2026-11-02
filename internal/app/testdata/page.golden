@@ -26,7 +26,9 @@ img, video {
 </style>
 </head>
 <body>
+<!-- lacre:begin -->
 <h1>Hello</h1>
 <p>Hello <b>world</b> &amp; friends!</p>
+<!-- lacre:end -->
 </body>
 </html>

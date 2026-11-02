@@ -38,6 +38,22 @@ func checkGolden(t *testing.T, name string, got []byte) {
 	}
 }
 
+// builtinPage builds the page with the built-in skin, and fails the test on
+// any error.
+func builtinPage(t *testing.T, input []byte, title, lang string, heads []string) []byte {
+	t.Helper()
+	s, err := openSkin("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	page, err := buildPage(s, input, title, lang, heads)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return page
+}
+
 // The golden pages, compared byte for byte.
 func TestPageGolden(t *testing.T) {
 	cases := []struct {
@@ -51,7 +67,7 @@ func TestPageGolden(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			checkGolden(t, c.name, buildPage([]byte(c.input), "", "", c.heads))
+			checkGolden(t, c.name, builtinPage(t, []byte(c.input), "", "", c.heads))
 		})
 	}
 }
@@ -107,7 +123,7 @@ func TestPageStructure(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			doc, err := html.Parse(bytes.NewReader(buildPage([]byte(c.input), c.title, c.lang, c.heads)))
+			doc, err := html.Parse(bytes.NewReader(builtinPage(t, []byte(c.input), c.title, c.lang, c.heads)))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -173,7 +189,7 @@ func TestPageStructure(t *testing.T) {
 
 // Nothing in the page refers to anything outside it.
 func TestPageSelfContained(t *testing.T) {
-	page := buildPage([]byte("Hello world!\n"), "", "", nil)
+	page := builtinPage(t, []byte("Hello world!\n"), "", "", nil)
 	for _, s := range []string{"http://", "https://", "<link", "<script", "src=", "href=", "url(", "@import"} {
 		if bytes.Contains(page, []byte(s)) {
 			t.Errorf("the page contains %q", s)
@@ -195,7 +211,7 @@ func TestPageEscaping(t *testing.T) {
 		{" a\tb\x01\xff ", "<title> a\tb\x01\xff </title>", "<html lang=\" a\tb\x01\xff \">"},
 	}
 	for _, c := range cases {
-		page := string(buildPage([]byte("Hello world!\n"), c.value, c.value, []string{c.value}))
+		page := string(builtinPage(t, []byte("Hello world!\n"), c.value, c.value, []string{c.value}))
 		for _, want := range []string{"\n" + c.title + "\n", "\n" + c.html + "\n", "</style>\n" + c.value + "\n</head>\n"} {
 			if !strings.Contains(page, want) {
 				t.Errorf("the page for %q lacks %q", c.value, want)
@@ -207,20 +223,21 @@ func TestPageEscaping(t *testing.T) {
 // Non-ASCII text comes out unchanged, in the body and in the title.
 func TestPageNonASCII(t *testing.T) {
 	const input = "Привет, мир! café 日本語 👋\n"
-	page := string(buildPage([]byte(input), "Заметки", "", nil))
+	page := string(builtinPage(t, []byte(input), "Заметки", "", nil))
 	if !strings.Contains(page, "\n<title>Заметки</title>\n") {
 		t.Error("the title did not come out unchanged")
 	}
-	if !strings.HasSuffix(page, "\n<body>\n"+input+"</body>\n</html>\n") {
+	if !strings.HasSuffix(page, "\n<body>\n<!-- lacre:begin -->\n"+input+"<!-- lacre:end -->\n</body>\n</html>\n") {
 		t.Error("the input did not come out unchanged")
 	}
 }
 
-// The input can be cut back out of the page. Every input of the golden,
+// The input is in the page between the markers, in the shape the README
+// shows: the page ends with the start marker and a line break, the input as it
+// is, the end marker, and the end of the page. Every input of the golden,
 // structure and pass-through tests, with the option values of its case where
-// it has some, then a full document with a title and a --head value that look
-// like the markers of the cut.
-func TestPageInputBack(t *testing.T) {
+// it has some, then an input that holds both markers itself.
+func TestPageMarkers(t *testing.T) {
 	cases := []struct {
 		input string
 		title string
@@ -238,18 +255,13 @@ func TestPageInputBack(t *testing.T) {
 		{input: "Привет, мир! café 日本語 👋\n", title: "Заметки"}, // non-ASCII
 		{input: "\xff\xfe\x00 ok\n"},                           // invalid UTF-8
 		{input: "\ufeffHello world!\n"},                        // byte order mark
-		{
-			input: "<html><head></head>\n<body>\n<p>x</p></body></html>\n",
-			title: "</head>",
-			heads: []string{"<body>"},
-		},
+		{input: "<!-- lacre:begin -->\n<p>x</p>\n<!-- lacre:end -->\n"},
 	}
 	for _, c := range cases {
-		page := buildPage([]byte(c.input), c.title, "", c.heads)
-		_, rest, found := bytes.Cut(page, []byte("</head>\n<body>\n"))
-		got, ended := bytes.CutSuffix(rest, []byte("</body>\n</html>\n"))
-		if !found || !ended || string(got) != c.input {
-			t.Errorf("the cut gives %q, want %q", got, c.input)
+		page := string(builtinPage(t, []byte(c.input), c.title, "", c.heads))
+		want := "\n<body>\n<!-- lacre:begin -->\n" + c.input + "<!-- lacre:end -->\n</body>\n</html>\n"
+		if !strings.HasSuffix(page, want) {
+			t.Errorf("the page does not end with %q:\n%q", want, page)
 		}
 	}
 }
@@ -259,8 +271,8 @@ func TestPageInputBack(t *testing.T) {
 // empty --head value would add.
 func TestPageEmptyValues(t *testing.T) {
 	input := []byte("Hello world!\n")
-	want := buildPage(input, "Untitled", "", nil)
-	if got := buildPage(input, "", "", []string{"", ""}); !bytes.Equal(got, want) {
+	want := builtinPage(t, input, "Untitled", "", nil)
+	if got := builtinPage(t, input, "", "", []string{"", ""}); !bytes.Equal(got, want) {
 		t.Errorf("empty values change the page:\n got: %q\nwant: %q", got, want)
 	}
 }

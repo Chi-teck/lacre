@@ -28,6 +28,8 @@ img, video {
 <style>p { color: navy }</style>
 </head>
 <body>
+<!-- lacre:begin -->
 Hello world!
+<!-- lacre:end -->
 </body>
 </html>

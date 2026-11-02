@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"strings"
 )
 
 // usage is the usage text, written by hand rather than by flag.PrintDefaults.
@@ -32,6 +33,10 @@ Options for build:
   --head HTML    HTML to add at the end of <head>, as it is; can be
                  given more than once
 
+Environment:
+  LACRE_SKIN     a skin directory, whose page.html is the page template;
+                 when unset or empty, lacre uses its built-in page
+
 Examples:
   echo 'Hello world!' | lacre build > hello-world.html
   lacre build --title 'My page' --lang en < snippet.html > page.html
@@ -45,27 +50,30 @@ const terminalHint = `lacre: standard input is a terminal; pipe or redirect the 
 `
 
 // Main is the command: it runs the command line with the process's own
-// arguments, standard streams and terminal check, and exits with the code run
-// returns. A closed pipe on Unix ends the program before that: nothing here
-// catches SIGPIPE, so Go's runtime lets it end the program when a write to
-// standard output fails with EPIPE.
+// arguments, LACRE_SKIN, standard streams and terminal check, and exits with
+// the code run returns. A closed pipe on Unix ends the program before that:
+// nothing here catches SIGPIPE, so Go's runtime lets it end the program when a
+// write to standard output fails with EPIPE.
 func Main() {
-	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr, stdinIsTerminal))
+	os.Exit(run(os.Args[1:], os.Getenv("LACRE_SKIN"), os.Stdin, os.Stdout, os.Stderr, stdinIsTerminal))
 }
 
 // run is the command line. It works in this order: it reads the command line,
-// checks that standard input is not a terminal, reads all of standard input
-// and writes the page; the first failure decides the message and the exit
-// code: 0 when the page, the usage or the version was written, 1 when reading
-// standard input or writing standard output failed, 2 when lacre was called
-// wrongly. isTerminal says whether standard input is a terminal: Main passes
+// opens the skin and parses its page.html, checks that standard input is not a
+// terminal, reads all of standard input, runs the template and writes the
+// page; the first failure decides the message and the exit code: 0 when the
+// page, the usage or the version was written, 1 when reading standard input or
+// writing standard output failed, 2 when lacre was called wrongly or the skin
+// is broken. skinDir is the value of LACRE_SKIN, empty for the built-in skin;
+// it is a parameter so that the tests cannot pick up a LACRE_SKIN set where
+// they run. isTerminal says whether standard input is a terminal: Main passes
 // stdinIsTerminal, the tests a fake.
 //
 // Go's flag package reads the options: first those before the command, then
 // those of build. Its output goes to io.Discard, which silences both the
 // error and the default usage it would print. -h and -help are its built-in
 // flag.ErrHelp, so the first --help ends the reading.
-func run(args []string, stdin io.Reader, stdout, stderr io.Writer, isTerminal func() bool) int {
+func run(args []string, skinDir string, stdin io.Reader, stdout, stderr io.Writer, isTerminal func() bool) int {
 	top := flag.NewFlagSet("lacre", flag.ContinueOnError)
 	top.SetOutput(io.Discard)
 	showVersion := top.Bool("version", false, "")
@@ -106,6 +114,15 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, isTerminal fu
 		return commandLineError(stderr, "build takes no arguments; it reads standard input")
 	}
 
+	// A broken skin stops lacre before it reads standard input. The files
+	// that include and dataURI read are read later, while the template runs,
+	// but still before anything is written.
+	s, err := openSkin(skinDir)
+	if err != nil {
+		return skinError(stderr, skinDir, err)
+	}
+	defer s.Close()
+
 	if isTerminal() {
 		_, _ = io.WriteString(stderr, terminalHint)
 		return 2
@@ -116,13 +133,26 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer, isTerminal fu
 		_, _ = fmt.Fprintf(stderr, "lacre: read standard input: %v\n", stripPath(err))
 		return 1
 	}
-	return writeStdout(stdout, stderr, buildPage(input, title, lang, heads))
+	page, err := buildPage(s, input, title, lang, heads)
+	if err != nil {
+		return skinError(stderr, skinDir, err)
+	}
+	return writeStdout(stdout, stderr, page)
 }
 
 // commandLineError prints a command-line error to standard error: the line
 // "lacre: <msg>", an empty line and the usage. It gives exit code 2.
 func commandLineError(stderr io.Writer, msg string) int {
 	_, _ = fmt.Fprintf(stderr, "lacre: %s\n\n%s", msg, usage)
+	return 2
+}
+
+// skinError prints a skin error to standard error: the line
+// "lacre: skin <dir>: <err>", with no usage after it, since the command line
+// was right. A template error loses only its "template: " prefix. It gives
+// exit code 2.
+func skinError(stderr io.Writer, dir string, err error) int {
+	_, _ = fmt.Fprintf(stderr, "lacre: skin %s: %s\n", dir, strings.TrimPrefix(err.Error(), "template: "))
 	return 2
 }
 
