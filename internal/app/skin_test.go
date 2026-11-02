@@ -120,8 +120,8 @@ func TestSkinInclude(t *testing.T) {
 	const js = "if (a {{ b) {}\n"
 	dir := writeSkin(t, map[string]string{
 		"page.gohtml": `[{{include "style.css"}}][{{include "js/app.js"}}]`,
-		"style.css": css,
-		"js/app.js": js,
+		"style.css":   css,
+		"js/app.js":   js,
 	})
 	wantPage(t, dir, "", nil, "["+css+"]["+js+"]")
 }
@@ -132,7 +132,7 @@ func TestSkinInclude(t *testing.T) {
 // has no extension.
 func TestSkinDataURI(t *testing.T) {
 	dir := writeSkin(t, map[string]string{
-		"page.gohtml":         `{{dataURI "logo.png"}} {{dataURI "fonts/inter.woff2"}} {{dataURI "icon.PNG"}}`,
+		"page.gohtml":       `{{dataURI "logo.png"}} {{dataURI "fonts/inter.woff2"}} {{dataURI "icon.PNG"}}`,
 		"logo.png":          "\x89PNG\xfb\xff",
 		"fonts/inter.woff2": "wOF2",
 		"icon.PNG":          "abc",
@@ -181,7 +181,7 @@ func TestSkinPaths(t *testing.T) {
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			dir := writeSkin(t, map[string]string{
-				"page.gohtml":     fmt.Sprintf("{{include %q}}", c.path),
+				"page.gohtml":   fmt.Sprintf("{{include %q}}", c.path),
 				"css/style.css": "p {}",
 			})
 			wantSkinError(t, dir,
