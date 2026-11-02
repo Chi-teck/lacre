@@ -234,7 +234,7 @@ func TestProgram(t *testing.T) {
 			cmd.Env = append(os.Environ(), "LACRE_TEST_BE_LACRE=1", "LACRE_SKIN=")
 			var skinDir string
 			if c.skin {
-				skinDir = writeSkin(t, map[string]string{"page.html": "<p>{{.Title}}</p>\n{{.Body}}\n"})
+				skinDir = writeSkin(t, map[string]string{"page.gohtml": "<p>{{.Title}}</p>\n{{.Body}}\n"})
 				cmd.Dir = filepath.Dir(skinDir)
 				cmd.Env = append(cmd.Env, "LACRE_SKIN="+filepath.Base(skinDir))
 			}

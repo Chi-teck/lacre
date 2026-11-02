@@ -20,7 +20,7 @@ import (
 const usage = `lacre turns plain text or an HTML snippet into a full HTML page.
 
 Usage:
-  lacre build [options] < input > page.html
+  lacre build [options] < input > page.gohtml
   lacre --help
   lacre --version
 
@@ -34,13 +34,13 @@ Options for build:
                  given more than once
 
 Environment:
-  LACRE_SKIN     a skin directory, whose page.html is the page template;
+  LACRE_SKIN     a skin directory, whose page.gohtml is the page template;
                  when unset or empty, lacre uses its built-in page
 
 Examples:
   echo 'Hello world!' | lacre build > hello-world.html
-  lacre build --title 'My page' --lang en < snippet.html > page.html
-  lacre build --head "$(cat head.html)" < snippet.html > page.html
+  lacre build --title 'My page' --lang en < snippet.html > page.gohtml
+  lacre build --head "$(cat head.html)" < snippet.html > page.gohtml
 `
 
 // terminalHint is what lacre build prints, without the usage, when standard
@@ -59,8 +59,8 @@ func Main() {
 }
 
 // run is the command line. It works in this order: it reads the command line,
-// opens the skin and parses its page.html, checks that standard input is not a
-// terminal, reads all of standard input, runs the template and writes the
+// opens the skin and parses its page.gohtml, checks that standard input is not
+// a terminal, reads all of standard input, runs the template and writes the
 // page; the first failure decides the message and the exit code: 0 when the
 // page, the usage or the version was written, 1 when reading standard input or
 // writing standard output failed, 2 when lacre was called wrongly or the skin

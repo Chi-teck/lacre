@@ -10,7 +10,7 @@
 // unless what you put in it refers to outside files.
 //
 // The environment variable LACRE_SKIN names a skin: a directory with a
-// page.html, the page template in Go's text/template syntax, and the files
+// page.gohtml, the page template in Go's text/template syntax, and the files
 // that template brings into the page. A relative path is relative to the
 // current directory. When the variable is unset or empty, lacre uses its
 // built-in skin.

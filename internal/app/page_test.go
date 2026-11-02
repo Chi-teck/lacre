@@ -232,7 +232,7 @@ func TestPageNonASCII(t *testing.T) {
 	}
 }
 
-// The input is in the page between the markers, in the shape the README
+// The input is in the page between the markers, in the shape docs/usage.md
 // shows: the page ends with the start marker and a line break, the input as it
 // is, the end marker, and the end of the page. Every input of the golden,
 // structure and pass-through tests, with the option values of its case where

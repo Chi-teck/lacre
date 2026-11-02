@@ -17,7 +17,7 @@ import (
 // as a user skin, and it uses only the four values and the two functions that
 // every skin has.
 //
-// Its page.html has a generator tag that names the tool and has no version,
+// Its page.gohtml has a generator tag that names the tool and has no version,
 // and meta tags that end with " />". The page holds no comment other than the
 // two markers, no version or date, and nothing that refers outside the page.
 // Its files have LF line endings, which .gitattributes keeps in a Windows
@@ -60,7 +60,7 @@ var mediaTypes = map[string]string{
 // the rule on paths in a skin.
 var errSkinPath = errors.New(`a path in a skin is names joined by /, with no \ or : and no empty, . or .. name`)
 
-// skin is an open skin: its files and its parsed page.html.
+// skin is an open skin: its files and its parsed page.gohtml.
 type skin struct {
 	fsys fs.FS
 	root *os.Root // nil for the built-in skin
@@ -68,14 +68,14 @@ type skin struct {
 }
 
 // openSkin opens the skin in dir, or the built-in skin when dir is empty, and
-// reads and parses its page.html. A relative dir is relative to the current
+// reads and parses its page.gohtml. A relative dir is relative to the current
 // directory. The files that include and dataURI read are read later, while the
 // template runs. A user skin is read through os.Root, so that no file outside
 // dir can be read, not even through a symbolic link.
 //
 // An error from the system comes without its *fs.PathError, whose path the
 // message already gives: the caller names the skin, and openSkin names
-// page.html. A parse error is the template's own.
+// page.gohtml. A parse error is the template's own.
 func openSkin(dir string) (*skin, error) {
 	s := &skin{}
 	if dir == "" {
@@ -91,14 +91,14 @@ func openSkin(dir string) (*skin, error) {
 		}
 		s.fsys, s.root = root.FS(), root
 	}
-	text, err := fs.ReadFile(s.fsys, "page.html")
+	text, err := fs.ReadFile(s.fsys, "page.gohtml")
 	if err != nil {
 		s.Close()
-		return nil, fmt.Errorf("page.html: %w", stripPath(err))
+		return nil, fmt.Errorf("page.gohtml: %w", stripPath(err))
 	}
 	// missingkey=error makes a misspelt value, such as .title, an error that
 	// names the key, where a struct would give a Go type name.
-	s.page, err = template.New("page.html").Option("missingkey=error").
+	s.page, err = template.New("page.gohtml").Option("missingkey=error").
 		Funcs(template.FuncMap{"include": s.include, "dataURI": s.dataURI}).
 		Parse(string(text))
 	if err != nil {

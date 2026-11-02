@@ -76,7 +76,7 @@ func wantSkinError(t *testing.T, dir, msg, sys string) {
 // the markers, byte for byte, with no line break added before the end marker.
 func TestSkinValues(t *testing.T) {
 	dir := writeSkin(t, map[string]string{
-		"page.html": "Title={{.Title}}\nLanguage={{.Language}}\nHead={{.Head}}\nBody={{.Body}}\n",
+		"page.gohtml": "Title={{.Title}}\nLanguage={{.Language}}\nHead={{.Head}}\nBody={{.Body}}\n",
 	})
 	cases := []struct {
 		name  string
@@ -108,7 +108,7 @@ func TestSkinValues(t *testing.T) {
 // &#43;.
 func TestSkinAsWritten(t *testing.T) {
 	dir := writeSkin(t, map[string]string{
-		"page.html": "<!-- a comment -->\n<p>1 + 1</p>\n<title>{{.Title}}</title>\n",
+		"page.gohtml": "<!-- a comment -->\n<p>1 + 1</p>\n<title>{{.Title}}</title>\n",
 	})
 	wantPage(t, dir, "", []string{"--title", "C++"}, "<!-- a comment -->\n<p>1 + 1</p>\n<title>C++</title>\n")
 }
@@ -119,7 +119,7 @@ func TestSkinInclude(t *testing.T) {
 	const css = "p { color: navy }\r\n/* {{.Title}} */\xff"
 	const js = "if (a {{ b) {}\n"
 	dir := writeSkin(t, map[string]string{
-		"page.html": `[{{include "style.css"}}][{{include "js/app.js"}}]`,
+		"page.gohtml": `[{{include "style.css"}}][{{include "js/app.js"}}]`,
 		"style.css": css,
 		"js/app.js": js,
 	})
@@ -132,7 +132,7 @@ func TestSkinInclude(t *testing.T) {
 // has no extension.
 func TestSkinDataURI(t *testing.T) {
 	dir := writeSkin(t, map[string]string{
-		"page.html":         `{{dataURI "logo.png"}} {{dataURI "fonts/inter.woff2"}} {{dataURI "icon.PNG"}}`,
+		"page.gohtml":         `{{dataURI "logo.png"}} {{dataURI "fonts/inter.woff2"}} {{dataURI "icon.PNG"}}`,
 		"logo.png":          "\x89PNG\xfb\xff",
 		"fonts/inter.woff2": "wOF2",
 		"icon.PNG":          "abc",
@@ -141,18 +141,18 @@ func TestSkinDataURI(t *testing.T) {
 		"data:image/png;base64,iVBOR/v/ data:font/woff2;base64,d09GMg== data:image/png;base64,YWJj")
 
 	t.Run("unknown extension", func(t *testing.T) {
-		dir := writeSkin(t, map[string]string{"page.html": `{{dataURI "logo.tiff"}}`, "logo.tiff": "II*\x00"})
+		dir := writeSkin(t, map[string]string{"page.gohtml": `{{dataURI "logo.tiff"}}`, "logo.tiff": "II*\x00"})
 		wantSkinError(t, dir,
-			`page.html:1:2: executing "page.html" at <dataURI "logo.tiff">: error calling dataURI: no media type for ".tiff"`, "")
+			`page.gohtml:1:2: executing "page.gohtml" at <dataURI "logo.tiff">: error calling dataURI: no media type for ".tiff"`, "")
 	})
 	t.Run("missing file", func(t *testing.T) {
-		dir := writeSkin(t, map[string]string{"page.html": `{{dataURI "logo.png"}}`})
-		wantSkinError(t, dir, `page.html:1:2: executing "page.html" at <dataURI "logo.png">: error calling dataURI: `,
+		dir := writeSkin(t, map[string]string{"page.gohtml": `{{dataURI "logo.png"}}`})
+		wantSkinError(t, dir, `page.gohtml:1:2: executing "page.gohtml" at <dataURI "logo.png">: error calling dataURI: `,
 			"no such file or directory")
 	})
 	t.Run("bad path", func(t *testing.T) {
-		dir := writeSkin(t, map[string]string{"page.html": `{{dataURI "logo.png/"}}`, "logo.png": "\x89PNG"})
-		wantSkinError(t, dir, `page.html:1:2: executing "page.html" at <dataURI "logo.png/">: error calling dataURI: `+
+		dir := writeSkin(t, map[string]string{"page.gohtml": `{{dataURI "logo.png/"}}`, "logo.png": "\x89PNG"})
+		wantSkinError(t, dir, `page.gohtml:1:2: executing "page.gohtml" at <dataURI "logo.png/">: error calling dataURI: `+
 			`a path in a skin is names joined by /, with no \ or : and no empty, . or .. name`, "")
 	})
 }
@@ -181,25 +181,25 @@ func TestSkinPaths(t *testing.T) {
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			dir := writeSkin(t, map[string]string{
-				"page.html":     fmt.Sprintf("{{include %q}}", c.path),
+				"page.gohtml":     fmt.Sprintf("{{include %q}}", c.path),
 				"css/style.css": "p {}",
 			})
 			wantSkinError(t, dir,
-				fmt.Sprintf(`page.html:1:2: executing "page.html" at <include %q>: error calling include: %s`, c.path, pathMsg),
+				fmt.Sprintf(`page.gohtml:1:2: executing "page.gohtml" at <include %q>: error calling include: %s`, c.path, pathMsg),
 				"")
 		})
 	}
 
 	t.Run("symbolic link out", func(t *testing.T) {
-		dir := writeSkin(t, map[string]string{"page.html": `{{include "out.css"}}`})
+		dir := writeSkin(t, map[string]string{"page.gohtml": `{{include "out.css"}}`})
 		if err := os.Symlink(outside, filepath.Join(dir, "out.css")); err != nil {
 			t.Skip(err)
 		}
-		wantSkinError(t, dir, `page.html:1:2: executing "page.html" at <include "out.css">: error calling include: `,
+		wantSkinError(t, dir, `page.gohtml:1:2: executing "page.gohtml" at <include "out.css">: error calling include: `,
 			"path escapes from parent")
 	})
 	t.Run("symbolic link in", func(t *testing.T) {
-		dir := writeSkin(t, map[string]string{"page.html": `{{include "link.css"}}`, "css/style.css": "p {}"})
+		dir := writeSkin(t, map[string]string{"page.gohtml": `{{include "link.css"}}`, "css/style.css": "p {}"})
 		if err := os.Symlink(filepath.Join("css", "style.css"), filepath.Join(dir, "link.css")); err != nil {
 			t.Skip(err)
 		}
@@ -222,30 +222,30 @@ func TestSkinBroken(t *testing.T) {
 		{name: "missing directory", dir: filepath.Join(t.TempDir(), "missing"), sys: "no such file or directory"},
 		{name: "file", dir: file, sys: "not a directory"},
 		{
-			name: "missing page.html",
+			name: "missing page.gohtml",
 			dir:  writeSkin(t, map[string]string{"style.css": "p {}"}),
-			msg:  "page.html: ",
+			msg:  "page.gohtml: ",
 			sys:  "no such file or directory",
 		},
 		{
 			name: "parse error",
-			dir:  writeSkin(t, map[string]string{"page.html": "<p>\n{{foo}}\n"}),
-			msg:  `page.html:2: function "foo" not defined`,
+			dir:  writeSkin(t, map[string]string{"page.gohtml": "<p>\n{{foo}}\n"}),
+			msg:  `page.gohtml:2: function "foo" not defined`,
 		},
 		{
 			name: "no such value",
-			dir:  writeSkin(t, map[string]string{"page.html": "{{.Nope}}"}),
-			msg:  `page.html:1:2: executing "page.html" at <.Nope>: map has no entry for key "Nope"`,
+			dir:  writeSkin(t, map[string]string{"page.gohtml": "{{.Nope}}"}),
+			msg:  `page.gohtml:1:2: executing "page.gohtml" at <.Nope>: map has no entry for key "Nope"`,
 		},
 		{
 			name: "value in lower case",
-			dir:  writeSkin(t, map[string]string{"page.html": "{{.title}}"}),
-			msg:  `page.html:1:2: executing "page.html" at <.title>: map has no entry for key "title"`,
+			dir:  writeSkin(t, map[string]string{"page.gohtml": "{{.title}}"}),
+			msg:  `page.gohtml:1:2: executing "page.gohtml" at <.title>: map has no entry for key "title"`,
 		},
 		{
 			name: "missing included file",
-			dir:  writeSkin(t, map[string]string{"page.html": `{{include "x.css"}}`}),
-			msg:  `page.html:1:2: executing "page.html" at <include "x.css">: error calling include: `,
+			dir:  writeSkin(t, map[string]string{"page.gohtml": `{{include "x.css"}}`}),
+			msg:  `page.gohtml:1:2: executing "page.gohtml" at <include "x.css">: error calling include: `,
 			sys:  "no such file or directory",
 		},
 	}
