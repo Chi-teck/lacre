@@ -6,16 +6,16 @@ import (
 	"strings"
 )
 
-// pageTemplate is the page (PAGE-1), with a %s for each of its five parts, in
-// order: the lang attribute, the title, the stylesheet, the --head values and
-// the body. Its generator tag names the tool and has no version (D8); its meta
-// tags end with " />" (D9). It holds no comment, version or date (PAGE-9), and
-// nothing that refers outside the page (PAGE-8). A Go raw string drops carriage
-// returns, so the page has LF line endings on every system.
+// pageTemplate is the page, with a %s for each of its five parts, in order:
+// the lang attribute, the title, the stylesheet, the --head values and the
+// body. Its generator tag names the tool and has no version; its meta tags end
+// with " />". It holds no comment, version or date, and nothing that refers
+// outside the page. A Go raw string drops carriage returns, so the page has LF
+// line endings on every system.
 //
-// The input can be cut back out of the page (PAGE-11): it is everything after
-// the first "</head>\n<body>\n" and before the "</body>\n</html>\n" that end
-// the page. A change here keeps that shape; TestPageInputBack checks it.
+// The input can be cut back out of the page: it is everything after the first
+// "</head>\n<body>\n" and before the "</body>\n</html>\n" that end the page.
+// A change here keeps that shape; TestPageInputBack checks it.
 const pageTemplate = `<!DOCTYPE html>
 <html%s>
 <head>
@@ -32,12 +32,12 @@ const pageTemplate = `<!DOCTYPE html>
 </html>
 `
 
-// stylesheet is the page's only styling (PAGE-6, PAGE-7). Element selectors
-// only, so that any style the input or a --head value brings wins; system
-// fonts; a centred column; no colours and no rules for print. ui-monospace
-// comes first because browsers shrink text whose only font is monospace to 13
-// pixels. At 0.875em a line of 80 monospace characters fits the 48rem column,
-// and pre-wrap and break-word wrap longer lines instead of cutting them off.
+// stylesheet is the page's only styling. Element selectors only, so that any
+// style the input or a --head value brings wins; system fonts; a centred
+// column; no colours and no rules for print. ui-monospace comes first because
+// browsers shrink text whose only font is monospace to 13 pixels. At 0.875em a
+// line of 80 monospace characters fits the 48rem column, and pre-wrap and
+// break-word wrap longer lines instead of cutting them off.
 //
 // It goes into pageTemplate as an argument, never as part of it, because of
 // the % in 100%.
@@ -60,11 +60,10 @@ img, video {
 }`
 
 // buildPage makes the page from the input and the option values. The input
-// and the --head values go in as they are, unchecked (PAGE-2, PAGE-3,
-// PAGE-10); the title and the language are escaped with html.EscapeString
-// (PAGE-5). An empty value counts as not given (CLI-4): the title becomes
-// "Untitled", the page gets no lang attribute, and an empty --head value adds
-// nothing.
+// and the --head values go in as they are, unchecked; the title and the
+// language are escaped with html.EscapeString. An empty value counts as not
+// given: the title becomes "Untitled", the page gets no lang attribute, and an
+// empty --head value adds nothing.
 func buildPage(input []byte, title, lang string, heads []string) []byte {
 	if title == "" {
 		title = "Untitled"

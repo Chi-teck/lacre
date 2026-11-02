@@ -38,7 +38,7 @@ func checkGolden(t *testing.T, name string, got []byte) {
 	}
 }
 
-// T-1.
+// The golden pages, compared byte for byte.
 func TestPageGolden(t *testing.T) {
 	cases := []struct {
 		name  string
@@ -78,7 +78,8 @@ func describe(n *html.Node) string {
 	return b.String()
 }
 
-// T-2. The cases name no input where the spec gives none: any input does.
+// The page's elements, as an HTML parser reads them. A case that is not about
+// the input gives none: any input would do.
 func TestPageStructure(t *testing.T) {
 	cases := []struct {
 		name        string
@@ -170,7 +171,7 @@ func TestPageStructure(t *testing.T) {
 	}
 }
 
-// T-3.
+// Nothing in the page refers to anything outside it.
 func TestPageSelfContained(t *testing.T) {
 	page := buildPage([]byte("Hello world!\n"), "", "", nil)
 	for _, s := range []string{"http://", "https://", "<link", "<script", "src=", "href=", "url(", "@import"} {
@@ -180,8 +181,9 @@ func TestPageSelfContained(t *testing.T) {
 	}
 }
 
-// T-4, with PAGE-5's pass-through: in the last row every other byte stays as it
-// is, and each value, as a --head value, is never escaped.
+// The title and the language escape only the five characters that
+// html.EscapeString replaces: in the last row every other byte stays as it is.
+// Each value, as a --head value, is never escaped.
 func TestPageEscaping(t *testing.T) {
 	cases := []struct{ value, title, html string }{
 		{"a&b", "<title>a&amp;b</title>", `<html lang="a&amp;b">`},
@@ -202,7 +204,7 @@ func TestPageEscaping(t *testing.T) {
 	}
 }
 
-// T-6.
+// Non-ASCII text comes out unchanged, in the body and in the title.
 func TestPageNonASCII(t *testing.T) {
 	const input = "Привет, мир! café 日本語 👋\n"
 	page := string(buildPage([]byte(input), "Заметки", "", nil))
@@ -214,26 +216,28 @@ func TestPageNonASCII(t *testing.T) {
 	}
 }
 
-// T-16. Every input of T-1 to T-8, with the option values of its case where
-// it has some, then the full document the spec names.
+// The input can be cut back out of the page. Every input of the golden,
+// structure and pass-through tests, with the option values of its case where
+// it has some, then a full document with a title and a --head value that look
+// like the markers of the cut.
 func TestPageInputBack(t *testing.T) {
 	cases := []struct {
 		input string
 		title string
 		heads []string
 	}{
-		{input: "<h1>Hello</h1>\n<p>Hello <b>world</b> &amp; friends!</p>\n"}, // T-1 page
-		{input: ""}, // T-1 empty
-		{ // T-1 head
+		{input: "<h1>Hello</h1>\n<p>Hello <b>world</b> &amp; friends!</p>\n"}, // page.golden
+		{input: ""}, // empty.golden
+		{ // head.golden
 			input: "Hello world!\n",
 			heads: []string{`<meta name="description" content="A test page" />`, `<style>p { color: navy }</style>`},
 		},
-		{input: "<p>One</p><p>Two</p>"},                        // T-2
-		{input: "<script>alert(1)</script>"},                   // T-2
-		{input: "one\r\ntwo\r\n\r\nthree\r\n"},                 // T-5
-		{input: "Привет, мир! café 日本語 👋\n", title: "Заметки"}, // T-6
-		{input: "\xff\xfe\x00 ok\n"},                           // T-7
-		{input: "\ufeffHello world!\n"},                        // T-8
+		{input: "<p>One</p><p>Two</p>"},                        // two paragraphs
+		{input: "<script>alert(1)</script>"},                   // script
+		{input: "one\r\ntwo\r\n\r\nthree\r\n"},                 // CRLF
+		{input: "Привет, мир! café 日本語 👋\n", title: "Заметки"}, // non-ASCII
+		{input: "\xff\xfe\x00 ok\n"},                           // invalid UTF-8
+		{input: "\ufeffHello world!\n"},                        // byte order mark
 		{
 			input: "<html><head></head>\n<body>\n<p>x</p></body></html>\n",
 			title: "</head>",
@@ -250,8 +254,9 @@ func TestPageInputBack(t *testing.T) {
 	}
 }
 
-// CLI-4, byte for byte: T-2 compares only the elements of the page, so it
-// cannot see the blank line an empty --head value would add.
+// An empty value counts as not given, byte for byte: TestPageStructure
+// compares only the elements of the page, so it cannot see the blank line an
+// empty --head value would add.
 func TestPageEmptyValues(t *testing.T) {
 	input := []byte("Hello world!\n")
 	want := buildPage(input, "Untitled", "", nil)

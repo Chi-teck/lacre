@@ -12,7 +12,7 @@ import (
 	"testing/iotest"
 )
 
-// TestMain lets T-13 run the real program: started with
+// TestMain lets TestProgram run the real program: started with
 // LACRE_TEST_BE_LACRE=1, the test binary is lacre itself, since Main exits
 // and never returns.
 func TestMain(m *testing.M) {
@@ -34,20 +34,20 @@ func lacre(input string, args ...string) (stdout, stderr string, code int) {
 	return out.String(), errOut.String(), code
 }
 
-// T-1, the row usage.golden: lacre --help (CLI-18).
+// The usage text of lacre --help, against usage.golden.
 func TestUsageGolden(t *testing.T) {
 	stdout, _, _ := lacre("", "--help")
 	checkGolden(t, "usage", []byte(stdout))
 }
 
-// T-5, T-7 and T-8: the input is the body, byte for byte, with exit code 0 and
-// nothing on standard error (CLI-9). The suffix pins the body to the input, so
-// the byte order mark of T-8 is at its start.
+// CRLF line endings, invalid UTF-8 and a byte order mark: the input is the
+// body, byte for byte, with exit code 0 and nothing on standard error. The
+// suffix pins the body to the input, so the byte order mark is at its start.
 func TestBuildPassThrough(t *testing.T) {
 	cases := []struct{ name, input string }{
-		{"T-5", "one\r\ntwo\r\n\r\nthree\r\n"},
-		{"T-7", "\xff\xfe\x00 ok\n"},
-		{"T-8", "\ufeffHello world!\n"},
+		{"CRLF", "one\r\ntwo\r\n\r\nthree\r\n"},
+		{"invalid UTF-8", "\xff\xfe\x00 ok\n"},
+		{"byte order mark", "\ufeffHello world!\n"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -65,9 +65,9 @@ func TestBuildPassThrough(t *testing.T) {
 	}
 }
 
-// T-9, over CLI-17, with the cases T-9 lists and two more: the order of the
-// --help and --version checks (CLI-7), and several --head values (CLI-5)
-// through the command line.
+// The command line: for each call, standard output, standard error and the
+// exit code. The last two cases add the order of the --help and --version
+// checks, and several --head values through the command line.
 func TestCommandLine(t *testing.T) {
 	usageErr := func(msg string) string { return "lacre: " + msg + "\n\n" + usage }
 	page := func(title, lang string, heads ...string) string {
@@ -101,7 +101,7 @@ func TestCommandLine(t *testing.T) {
 		{args: []string{"build", "--title", ""}, stdout: page("Untitled", "")},
 		{args: []string{"build", "--lang", ""}, stdout: page("", "")},
 		{args: []string{"build", "--head"}, stderr: usageErr("flag needs an argument: -head"), code: 2},
-		{args: []string{"--version", "--help"}, stdout: usage}, // --help wins (CLI-7)
+		{args: []string{"--version", "--help"}, stdout: usage}, // --help wins
 		{args: []string{"build", "--head", "a", "--head", "b"}, stdout: page("", "", "a", "b")},
 	}
 	for _, c := range cases {
@@ -118,7 +118,7 @@ func TestCommandLine(t *testing.T) {
 	}
 }
 
-// T-10: some input arrives and then the read fails. The error is the shape
+// Some input arrives and then the read fails. The error is the shape
 // os.Stdin gives, so the test also covers the removal of the path.
 func TestReadFails(t *testing.T) {
 	readErr := &fs.PathError{Op: "read", Path: "/dev/stdin", Err: errors.New("boom")}
@@ -141,8 +141,8 @@ type failingWriter struct{ err error }
 
 func (w failingWriter) Write([]byte) (int, error) { return 0, w.err }
 
-// T-11: the page, the usage and the version all go to standard output, and a
-// failed write of any of them is an error.
+// The page, the usage and the version all go to standard output, and a failed
+// write of any of them is an error.
 func TestWriteFails(t *testing.T) {
 	writeErr := &fs.PathError{Op: "write", Path: "/dev/stdout", Err: errors.New("boom")}
 	for _, args := range [][]string{{"build"}, {"--help"}, {"--version"}} {
@@ -157,8 +157,8 @@ func TestWriteFails(t *testing.T) {
 	}
 }
 
-// T-12: a terminal check that says "terminal". The hint is written out here
-// rather than taken from terminalHint, so that the test pins CLI-17's words.
+// A terminal check that says "terminal". The hint is written out here rather
+// than taken from terminalHint, so that the test pins its words.
 func TestTerminal(t *testing.T) {
 	const input = "Hello world!\n"
 	const hint = "lacre: standard input is a terminal; pipe or redirect the input, for example:\n" +
@@ -169,7 +169,7 @@ func TestTerminal(t *testing.T) {
 		code           int
 	}{
 		{args: []string{"build"}, stderr: hint, code: 2},
-		// The option error wins over the terminal (CLI-15).
+		// The option error wins over the terminal.
 		{args: []string{"build", "--bogus"}, stderr: "lacre: flag provided but not defined: -bogus\n\n" + usage, code: 2},
 		// Help typed at a prompt is the commonest real call.
 		{args: []string{"build", "--help"}, stdout: usage},
@@ -193,7 +193,7 @@ func TestTerminal(t *testing.T) {
 	}
 }
 
-// T-13: the real program as a child process, the test binary run again in its
+// The real program as a child process, the test binary run again in its
 // "be lacre" mode (see TestMain). /dev/null is a character device, as a
 // terminal is, and the check must not take it for one; a pipe is the other
 // everyday input. Both cases guard the mistake of taking an input that is not

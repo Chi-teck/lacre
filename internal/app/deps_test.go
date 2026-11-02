@@ -10,9 +10,9 @@ import (
 	"testing"
 )
 
-// T-15. The binary uses only the standard library (principle 4), and the
-// test-only golang.org/x/net never reaches it (D1). go test runs this in
-// internal/app, so the command names the main package by its path.
+// The binary uses only the standard library, and the test-only
+// golang.org/x/net never reaches it. go test runs this in internal/app, so the
+// command names the main package by its path.
 func TestStandardLibraryOnly(t *testing.T) {
 	goBin, err := exec.LookPath("go")
 	if err != nil {
