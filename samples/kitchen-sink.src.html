@@ -1,0 +1,297 @@
+<h1>Kitchen sink</h1>
+
+<p>The basic HTML elements, with no styles, classes or scripts of their own.</p>
+
+<nav aria-label="Contents">
+  <ul>
+    <li><a href="#headings">Headings</a></li> <li><a href="#text">Text</a></li> <li><a href="#lists">Lists</a></li>
+    <li><a href="#code">Code</a></li> <li><a href="#tables">Tables</a></li> <li><a href="#media">Media</a></li>
+    <li><a href="#forms">Forms</a></li> <li><a href="#interactive">Interactive</a></li>
+    <li><a href="#sections">Sections</a></li>
+  </ul>
+</nav>
+
+<h2 id="headings">Headings</h2>
+
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h3>Heading 3, long enough to wrap onto a second line, to see the line height of headings in the column</h3>
+<h4>Heading 4</h4>
+<h5>Heading 5</h5>
+<h6>Heading 6</h6>
+<p>A paragraph after a heading.</p>
+
+<h2 id="text">Text</h2>
+
+<p>
+  A paragraph of prose, long enough to wrap onto several lines, so that the font, the line height and the width of
+  the column can be judged on real text. A second sentence makes sure that it wraps even on a wide screen.
+</p>
+
+<p>
+  Inline elements, each named by its tag: <a href="#text">a</a> (and <a href="https://example.com/">a
+  to another site</a>), <em>em</em>, <strong>strong</strong>, <i>i</i>, <b>b</b>, <u>u</u>, <s>s</s>,
+  <small>small</small>, <mark>mark</mark>, <del>del</del>, <ins>ins</ins>, x<sub>sub</sub>, x<sup>sup</sup>,
+  <abbr title="Abbreviation">abbr</abbr>, <dfn>dfn</dfn>, <cite>cite</cite>, <q>q</q>,
+  <time datetime="2026-11-03">time</time>, <data value="1">data</data>, <code>code</code>, <var>var</var>,
+  <samp>samp</samp>, <kbd>kbd</kbd>, <bdi>bdi</bdi>, <bdo dir="rtl">bdo</bdo>,
+  <ruby>ruby<rp>(</rp><rt>rt</rt><rp>)</rp></ruby>, <span>span</span>, and a long word broken with wbr:
+  Super<wbr>cali<wbr>fragilistic<wbr>expiali<wbr>docious.
+</p>
+
+<p>Lines broken with br:<br>the second line,<br>the third line.</p>
+
+<p>
+  Entities: &amp; &lt; &gt; &quot; &copy; &mdash; &hellip; &euro;, and a no-break space in 10&nbsp;km. Other scripts:
+  <span lang="de">Grüße</span>, <span lang="ru">Привет</span>, <span lang="el">Γειά σου</span>,
+  <span lang="ja">こんにちは</span>, <span lang="zh">你好</span>.
+</p>
+
+<p dir="rtl" lang="ar">فقرة من اليمين إلى اليسار.</p>
+
+<p>
+  A long URL, which must wrap rather than widen the page:
+  https://example.com/a/very/long/path/without/any/spaces/that/would/otherwise/overflow/the/column/on/a/phone/screen
+</p>
+
+<blockquote cite="https://example.com/">
+  <p>A block quotation, long enough to wrap, to see its indent and any border or colour on both of its lines.</p>
+</blockquote>
+
+<hr>
+
+<h2 id="lists">Lists</h2>
+
+<ul>
+  <li>An unordered list</li>
+  <li>With a nested one
+    <ul>
+      <li>At the second level
+        <ul><li>At the third level</li></ul>
+      </li>
+    </ul>
+  </li>
+  <li>And an item long enough to wrap, to see whether its second line lines up with the text or with the marker.</li>
+</ul>
+
+<ol start="9">
+  <li>An ordered list that starts at 9</li>
+  <li>So that it reaches two digits
+    <ul><li>With an unordered list inside it</li></ul>
+  </li>
+  <li>Eleventh</li>
+</ol>
+
+<dl>
+  <dt>A term</dt>
+  <dd>Its description</dd>
+  <dt>A term with two descriptions</dt>
+  <dd>The first description</dd>
+  <dd>The second description</dd>
+</dl>
+
+<h2 id="code">Code</h2>
+
+<p>A block of code, indented with a tab, with a line that must wrap or scroll rather than widen the page:</p>
+
+<pre><code>func main() {
+	fmt.Println("A long line that must wrap inside the column rather than make the page scroll sideways on a narrow screen.")
+}
+</code></pre>
+
+<p>Program output, in <code>samp</code>:</p>
+
+<pre><samp>$ echo 'Hello, world!'
+Hello, world!
+</samp></pre>
+
+<h2 id="tables">Tables</h2>
+
+<table>
+  <caption>The inner planets</caption>
+  <thead>
+    <tr>
+      <th scope="col" rowspan="2">Planet</th>
+      <th scope="colgroup" colspan="2">Orbit</th>
+      <th scope="col" rowspan="2">Moons</th>
+    </tr>
+    <tr><th scope="col">Distance (AU)</th><th scope="col">Period (days)</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">Mercury</th><td>0.39</td><td>88</td><td>0</td></tr>
+    <tr><th scope="row">Venus</th><td>0.72</td><td>225</td><td>0</td></tr>
+    <tr><th scope="row">Earth</th><td>1.00</td><td>365</td><td>1</td></tr>
+    <tr><th scope="row">Mars</th><td>1.52</td><td>687</td><td>2</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><th scope="row" colspan="3">Total</th><td>3</td></tr>
+  </tfoot>
+</table>
+
+<p>A table with no head, which cannot shrink to the column, since its cells have no place to break:</p>
+
+<table>
+  <tr>
+    <td><code>photos_2026_spring_part1.tar.gz</code></td> <td><code>photos_2026_spring_part2.tar.gz</code></td>
+    <td><code>photos_2026_summer_part1.tar.gz</code></td> <td><code>photos_2026_summer_part2.tar.gz</code></td>
+    <td><code>photos_2026_autumn_part1.zip</code></td> <td><code>photos_2026_autumn_part2.zip</code></td>
+  </tr>
+</table>
+
+<h2 id="media">Images and media</h2>
+
+<figure>
+  <img
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300' viewBox='0 0 1200 300'%3E%3Crect width='1200' height='300' fill='%234a7bd0'/%3E%3Ctext x='600' y='170' font-family='sans-serif' font-size='64' fill='white' text-anchor='middle'%3E1200 × 300%3C/text%3E%3C/svg%3E"
+    width="1200" height="300" alt="A blue rectangle, 1200 by 300 pixels">
+  <figcaption>An image 1200 pixels wide, in a figure: it must shrink to fit and keep its proportions.</figcaption>
+</figure>
+
+<p>
+  An image in a line of text,
+  <img
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='8' fill='%23d04a4a'/%3E%3C/svg%3E"
+    width="16" height="16" alt="A red dot">,
+  and an inline <code>svg</code>,
+  <svg width="16" height="16" viewBox="0 0 16 16" role="img" aria-label="A green square">
+    <rect width="16" height="16" fill="#4ad07b"/>
+  </svg>,
+  to see how they sit on the line.
+</p>
+
+<p>A video with a poster but no source; it must shrink to fit:</p>
+
+<video
+  controls width="1280" height="720"
+  poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1280' height='720' viewBox='0 0 1280 720'%3E%3Crect width='1280' height='720' fill='%23333'/%3E%3Ctext x='640' y='380' font-family='sans-serif' font-size='64' fill='white' text-anchor='middle'%3EVideo poster, 1280 × 720%3C/text%3E%3C/svg%3E"></video>
+
+<p>An audio player with no source, and an inline frame:</p>
+
+<audio controls></audio>
+
+<iframe title="A sample frame" srcdoc="&lt;p&gt;The content of an inline frame.&lt;/p&gt;"></iframe>
+
+<h2 id="forms">Forms</h2>
+
+<p>The form goes nowhere: submitting it reloads the page.</p>
+
+<form>
+  <fieldset>
+    <legend>Text</legend>
+    <p><label>Text, required <input name="text" type="text" placeholder="A placeholder" required></label></p>
+    <p><label>Email <input name="email" type="email" value="someone@example.com"></label></p>
+    <p><label>Password <input name="password" type="password" value="password"></label></p>
+    <p><label>URL <input name="url" type="url"></label></p>
+    <p><label>Telephone <input name="tel" type="tel"></label></p>
+    <p><label>Search <input name="search" type="search"></label></p>
+    <p><label>Disabled <input name="disabled" type="text" value="Disabled" disabled></label></p>
+    <p><label>Read-only <input name="readonly" type="text" value="Read-only" readonly></label></p>
+    <p><label>Text area<br><textarea name="textarea" rows="3" cols="40">Several lines
+of text.</textarea></label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Other inputs</legend>
+    <p><label>Number <input name="number" type="number" value="42"></label></p>
+    <p><label>Range <input name="range" type="range" value="30"></label></p>
+    <p><label>Date <input name="date" type="date" value="2026-11-03"></label></p>
+    <p><label>Time <input name="time" type="time" value="09:30"></label></p>
+    <p><label>Date and time <input name="datetime" type="datetime-local" value="2026-11-03T09:30"></label></p>
+    <p><label>Month <input name="month" type="month" value="2026-11"></label></p>
+    <p><label>Week <input name="week" type="week" value="2026-W45"></label></p>
+    <p><label>Colour <input name="color" type="color" value="#4a7bd0"></label></p>
+    <p><label>File <input name="file" type="file"></label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Choices</legend>
+    <p>
+      <label>Select
+        <select name="select">
+          <option>An option</option>
+          <option disabled>A disabled option</option>
+          <optgroup label="A group"><option>An option in a group</option></optgroup>
+        </select>
+      </label>
+    </p>
+    <p>
+      <label>Multiple select<br>
+        <select name="multiple" multiple size="3">
+          <option selected>One</option> <option>Two</option> <option selected>Three</option> <option>Four</option>
+        </select>
+      </label>
+    </p>
+    <p>
+      <label>Text with suggestions <input name="suggestion" type="text" list="suggestions"></label>
+      <datalist id="suggestions"><option value="Linux"></option><option value="macOS"></option></datalist>
+    </p>
+    <p>
+      <label><input type="checkbox" name="checkbox"> A checkbox</label>
+      <label><input type="checkbox" name="checkbox" checked> Checked</label>
+      <label><input type="checkbox" name="checkbox" disabled> Disabled</label>
+    </p>
+    <fieldset>
+      <legend>Radio buttons, in a nested fieldset</legend>
+      <label><input type="radio" name="radio" checked> Checked</label>
+      <label><input type="radio" name="radio"> Not checked</label>
+      <label><input type="radio" name="radio" disabled> Disabled</label>
+    </fieldset>
+  </fieldset>
+
+  <p>
+    <button type="submit">Submit</button> <button type="reset">Reset</button> <button type="button">Button</button>
+    <button type="button" disabled>Disabled</button> <input type="submit" value="Input submit">
+    <input type="button" value="Input button">
+  </p>
+</form>
+
+<p>
+  <label>Progress <progress value="70" max="100">70%</progress></label>
+  <label>Unknown progress <progress>Working</progress></label>
+</p>
+
+<p>
+  <label>Meter, optimum <meter value="0.2" low="0.5" high="0.8" optimum="0">20%</meter></label>
+  <label>Warning <meter value="0.6" low="0.5" high="0.8" optimum="0">60%</meter></label>
+  <label>Bad <meter value="0.9" low="0.5" high="0.8" optimum="0">90%</meter></label>
+</p>
+
+<p>An output: <output name="result">72</output>.</p>
+
+<h2 id="interactive">Interactive elements</h2>
+
+<details><summary>A closed disclosure</summary><p>The hidden content.</p></details>
+<details open><summary>An open disclosure</summary><p>The content, shown from the start.</p></details>
+
+<p>
+  <button type="button" commandfor="dialog" command="show-modal">Open a modal dialog</button> with no script: the
+  button's <code>command</code> attribute opens it, and does nothing in a browser too old for it.
+</p>
+
+<dialog id="dialog">
+  <p>A modal dialog.</p>
+  <form method="dialog"><button>Close</button></form>
+</dialog>
+
+<h2 id="sections">Sections</h2>
+
+<article>
+  <header>
+    <h3>An article</h3>
+    <p>Its header, posted on <time datetime="2026-11-03">3 November 2026</time>.</p>
+  </header>
+  <p>The text of the article.</p>
+  <section>
+    <h4>A section of the article</h4>
+    <p>The text of the section.</p>
+  </section>
+  <aside><p>An aside, such as a note beside the text.</p></aside>
+  <footer><p>The article's footer.</p></footer>
+</article>
+
+<hgroup>
+  <h3>A heading in an hgroup</h3>
+  <p>With a subtitle</p>
+</hgroup>
+
+<address>An address: Someone, <a href="mailto:someone@example.com">someone@example.com</a></address>
