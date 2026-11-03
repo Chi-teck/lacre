@@ -1,6 +1,6 @@
 # Development
 
-The commands below need [Task](https://taskfile.dev); `task` alone lists all the tasks.
+The commands below need [Task](https://taskfile.dev); `task --list` lists all the tasks.
 
 ```bash
 task check              # gofmt, go vet (also for other systems), golangci-lint, go test: the check before a commit

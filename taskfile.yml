@@ -6,12 +6,6 @@ vars:
   BINARY: 'lacre{{exeExt}}'
 
 tasks:
-  default:
-    desc: 'List available tasks'
-    cmds:
-      - 'task --list'
-    silent: true
-
   # CGO_ENABLED=0 keeps the binary static.
   #
   # No sources/generates fingerprint: `go build` is already incremental, and a
@@ -24,7 +18,7 @@ tasks:
       - 'go build -o {{.BINARY}} .'
 
   run:
-    desc: 'Run lacre (e.g. `task run -- build --title Demo < page.html`)'
+    desc: 'Run lacre (e.g. `task run -- build --title Demo < page.src.html`)'
     cmds:
       - 'go run . {{.CLI_ARGS}}'
 
