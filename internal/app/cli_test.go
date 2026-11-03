@@ -84,7 +84,9 @@ func TestCommandLine(t *testing.T) {
 		return string(builtinPage(t, []byte("Hello world!\n"), title, lang, heads))
 	}
 	versionLine := "lacre " + buildVersion() + "\n"
+	guide := builtinStyleGuide(t)
 	const noArgs = "build takes no arguments; it reads standard input"
+	const noGuideArgs = "style-guide takes no arguments; name the theme with --theme"
 
 	cases := []struct {
 		args           []string
@@ -113,6 +115,12 @@ func TestCommandLine(t *testing.T) {
 		{args: []string{"build", "--lang", ""}, stdout: page("", "")},
 		{args: []string{"build", "--head"}, stderr: usageErr("flag needs an argument: -head"), code: 2},
 		{args: []string{"build", "--theme"}, stderr: usageErr("flag needs an argument: -theme"), code: 2},
+		{args: []string{"style-guide"}, stdout: guide},
+		{args: []string{"style-guide", "--help"}, stdout: usage},
+		{args: []string{"style-guide", "-h"}, stdout: usage},
+		{args: []string{"style-guide", "guide.md"}, stderr: usageErr(noGuideArgs), code: 2},
+		{args: []string{"style-guide", "--theme"}, stderr: usageErr("flag needs an argument: -theme"), code: 2},
+		{args: []string{"style-guide", "--title", "X"}, stderr: usageErr("flag provided but not defined: -title"), code: 2},
 		{args: []string{"--version", "--help"}, stdout: usage}, // --help wins
 		{args: []string{"build", "--head", "a", "--head", "b"}, stdout: page("", "", "a", "b")},
 	}
@@ -170,11 +178,11 @@ type failingWriter struct{ err error }
 
 func (w failingWriter) Write([]byte) (int, error) { return 0, w.err }
 
-// The page, the usage and the version all go to standard output, and a failed
-// write of any of them is an error.
+// The page, the style guide, the usage and the version all go to standard
+// output, and a failed write of any of them is an error.
 func TestWriteFails(t *testing.T) {
 	writeErr := &fs.PathError{Op: "write", Path: "/dev/stdout", Err: errors.New("boom")}
-	for _, args := range [][]string{{"build"}, {"--help"}, {"--version"}} {
+	for _, args := range [][]string{{"build"}, {"style-guide"}, {"--help"}, {"--version"}} {
 		var stderr bytes.Buffer
 		code := run(args, "", strings.NewReader("Hello world!\n"), failingWriter{writeErr}, &stderr, notTerminal)
 		if code != 1 {
@@ -192,6 +200,7 @@ func TestTerminal(t *testing.T) {
 	const input = "Hello world!\n"
 	const hint = "lacre: standard input is a terminal; pipe or redirect the input, for example:\n" +
 		"  echo 'Hello world!' | lacre build > hello-world.html\n"
+	guide := builtinStyleGuide(t)
 	cases := []struct {
 		args           []string
 		stdout, stderr string
@@ -202,6 +211,8 @@ func TestTerminal(t *testing.T) {
 		{args: []string{"build", "--bogus"}, stderr: "lacre: flag provided but not defined: -bogus\n\n" + usage, code: 2},
 		// Help typed at a prompt is the commonest real call.
 		{args: []string{"build", "--help"}, stdout: usage},
+		// style-guide reads no input, so a terminal is no error.
+		{args: []string{"style-guide"}, stdout: guide},
 	}
 	for _, c := range cases {
 		stdin := strings.NewReader(input)

@@ -13,7 +13,7 @@ import (
 )
 
 // usage is the usage text, written by hand rather than by flag.PrintDefaults.
-// --help and -h, before or after build, print it to standard output; a
+// --help and -h, before or after a command, print it to standard output; a
 // command-line error prints it to standard error, after the error line and an
 // empty line, and lacre without a command prints it there alone. A Go raw
 // string drops carriage returns, so its lines end with LF on every system.
@@ -21,29 +21,38 @@ const usage = `lacre turns plain text or an HTML snippet into a full HTML page.
 
 Usage:
   lacre build [options] < input > page.html
+  lacre style-guide [--theme DIR]
   lacre --help
   lacre --version
 
 The build command reads standard input and writes the page to standard
 output. The input goes into the page as it is, as HTML.
 
+The style-guide command prints the style guide of the theme in use,
+in Markdown, as the theme's author wrote it: what the input can use,
+such as a framework and its classes, and what the page already puts
+around the input. Read it before writing input for the theme.
+
 Options for build:
   --title TEXT   page title (default "Untitled")
   --lang CODE    page language, such as "en" (default: none)
   --head HTML    HTML to add at the end of <head>, as it is; can be
                  given more than once
+
+Options for build and style-guide:
   --theme DIR    a theme directory, whose page.gohtml is the page
                  template; empty, as in --theme=, for the built-in
-                 page (default: LACRE_THEME)
+                 theme (default: LACRE_THEME)
 
 Environment:
   LACRE_THEME    a theme directory, used without --theme; when unset
-                 or empty, lacre uses its built-in page
+                 or empty, lacre uses its built-in theme
 
 Examples:
   echo 'Hello world!' | lacre build > hello-world.html
   lacre build --title 'My page' --lang en < snippet.html > page.html
   lacre build --head "$(cat head.html)" < snippet.html > page.html
+  lacre style-guide
 `
 
 // terminalHint is what lacre build prints, without the usage, when standard
@@ -61,19 +70,22 @@ func Main() {
 	os.Exit(run(os.Args[1:], os.Getenv("LACRE_THEME"), os.Stdin, os.Stdout, os.Stderr, stdinIsTerminal))
 }
 
-// run is the command line. It works in this order: it reads the command line,
-// opens the theme and parses its page.gohtml, checks that standard input is not
-// a terminal, reads all of standard input, runs the template and writes the
-// page; the first failure decides the message and the exit code: 0 when the
-// page, the usage or the version was written, 1 when reading standard input or
-// writing standard output failed, 2 when lacre was called wrongly or the theme
-// is broken. themeDir is the value of LACRE_THEME, empty for the built-in
-// theme, and a --theme replaces it; it is a parameter so that the tests cannot
-// pick up a LACRE_THEME set where they run. isTerminal says whether standard
-// input is a terminal: Main passes stdinIsTerminal, the tests a fake.
+// run is the command line. For build it works in this order: it reads the
+// command line, opens the theme and parses its page.gohtml, checks that
+// standard input is not a terminal, reads all of standard input, runs the
+// template and writes the page; style-guide opens the theme the same way, then
+// reads and writes its style guide (see runStyleGuide). The first failure
+// decides the message and the exit code: 0 when the page, the style guide, the
+// usage or the version was written, 1 when reading standard input or writing
+// standard output failed, 2 when lacre was called wrongly, the theme is broken
+// or, for style-guide, it has no style guide. themeDir is the value of
+// LACRE_THEME, empty for the built-in theme, and a --theme replaces it; it is a
+// parameter so that the tests cannot pick up a LACRE_THEME set where they run.
+// isTerminal says whether standard input is a terminal: Main passes
+// stdinIsTerminal, the tests a fake.
 //
 // Go's flag package reads the options: first those before the command, then
-// those of build. Its output goes to io.Discard, which silences both the
+// those of the command. Its output goes to io.Discard, which silences both the
 // error and the default usage it would print. -h and -help are its built-in
 // flag.ErrHelp, so the first --help ends the reading.
 func run(args []string, themeDir string, stdin io.Reader, stdout, stderr io.Writer, isTerminal func() bool) int {
@@ -92,6 +104,8 @@ func run(args []string, themeDir string, stdin io.Reader, stdout, stderr io.Writ
 	case top.NArg() == 0:
 		_, _ = io.WriteString(stderr, usage)
 		return 2
+	case top.Arg(0) == "style-guide":
+		return runStyleGuide(top.Args()[1:], themeDir, stdout, stderr)
 	case top.Arg(0) != "build":
 		return commandLineError(stderr, fmt.Sprintf("unknown command %q", top.Arg(0)))
 	}
@@ -109,13 +123,7 @@ func run(args []string, themeDir string, stdin io.Reader, stdout, stderr io.Writ
 		heads = append(heads, v)
 		return nil
 	})
-	// --theme replaces themeDir only when it is given, so that it wins over
-	// LACRE_THEME and an empty one gives the built-in theme, the rule the
-	// variable follows. The last one wins, as with --title and --lang.
-	build.Func("theme", "", func(v string) error {
-		themeDir = v
-		return nil
-	})
+	themeOption(build, &themeDir)
 	switch err := build.Parse(top.Args()[1:]); {
 	case errors.Is(err, flag.ErrHelp):
 		return writeStdout(stdout, stderr, []byte(usage))
@@ -151,6 +159,49 @@ func run(args []string, themeDir string, stdin io.Reader, stdout, stderr io.Writ
 	return writeStdout(stdout, stderr, page)
 }
 
+// themeOption defines --theme in flags, for build and style-guide alike.
+// --theme replaces *dir only when it is given, so that it wins over
+// LACRE_THEME and an empty one gives the built-in theme, the rule the variable
+// follows. The last one wins.
+func themeOption(flags *flag.FlagSet, dir *string) {
+	flags.Func("theme", "", func(v string) error {
+		*dir = v
+		return nil
+	})
+}
+
+// runStyleGuide is the style-guide command, which writes the style guide of
+// the theme in use to standard output. args are the arguments after the
+// command, and themeDir and the rest are as for run. It opens the theme as
+// build does, so that a theme build cannot open fails here too, before anyone
+// writes input for it. The template is not run, so the files that include and
+// dataURI read are not checked. It does not read standard input, so a terminal
+// there is no error.
+func runStyleGuide(args []string, themeDir string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("style-guide", flag.ContinueOnError)
+	flags.SetOutput(io.Discard)
+	themeOption(flags, &themeDir)
+	switch err := flags.Parse(args); {
+	case errors.Is(err, flag.ErrHelp):
+		return writeStdout(stdout, stderr, []byte(usage))
+	case err != nil:
+		return commandLineError(stderr, err.Error())
+	case flags.NArg() > 0:
+		return commandLineError(stderr, "style-guide takes no arguments; name the theme with --theme")
+	}
+
+	th, err := openTheme(themeDir)
+	if err != nil {
+		return themeError(stderr, themeDir, err)
+	}
+	defer th.Close()
+	guide, err := th.styleGuide()
+	if err != nil {
+		return themeError(stderr, themeDir, err)
+	}
+	return writeStdout(stdout, stderr, guide)
+}
+
 // commandLineError prints a command-line error to standard error: the line
 // "lacre: <msg>", an empty line and the usage. It gives exit code 2.
 func commandLineError(stderr io.Writer, msg string) int {
@@ -161,7 +212,8 @@ func commandLineError(stderr io.Writer, msg string) int {
 // themeError prints a theme error to standard error: the line
 // "lacre: theme <dir>: <err>", or "lacre: built-in theme: <err>" when dir is
 // empty, with no usage after it, since the command line was right. A template
-// error loses only its "template: " prefix. It gives exit code 2.
+// error loses only its "template: " prefix. It gives exit code 2. For
+// style-guide, a theme without a style guide is a theme error too.
 //
 // An empty dir is the built-in theme, which has no directory to name. Naming
 // it keeps whoever changes it from looking for the mistake in --theme or
@@ -175,9 +227,9 @@ func themeError(stderr io.Writer, dir string, err error) int {
 	return 2
 }
 
-// writeStdout writes b, which is the page, the usage or the version, to
-// standard output in one write. If that fails it prints the error and gives
-// exit code 1, otherwise 0.
+// writeStdout writes b, which is the page, the style guide, the usage or the
+// version, to standard output in one write. If that fails it prints the error
+// and gives exit code 1, otherwise 0.
 func writeStdout(stdout, stderr io.Writer, b []byte) int {
 	if _, err := stdout.Write(b); err != nil {
 		_, _ = fmt.Fprintf(stderr, "lacre: write standard output: %v\n", stripPath(err))

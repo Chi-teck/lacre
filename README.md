@@ -37,9 +37,12 @@ lacre build --title 'My page' --lang en < snippet.html > page.html
 The input goes into the page as it is and is not cleaned: a script in the input runs when the page is opened. Use lacre
 only on input you trust.
 
+`lacre style-guide` prints what the theme in use offers to whoever writes the input, such as an AI agent.
+
 ## Documentation
 
-- [Usage](docs/usage.md): the page lacre builds, the options, the input, exit codes and known limits
-- [Themes](docs/themes.md): replacing the built-in page with your own layout, styles and fonts
+- [Usage](docs/usage.md): the page lacre builds, the options, the input, the style guide, exit codes and known limits
+- [Themes](docs/themes.md): replacing the built-in page with your own layout, styles and fonts, and a style guide for
+  whoever writes the input
 - [Windows](docs/windows.md): `cmd.exe`, PowerShell and Git Bash
 - [Development](docs/development.md): tasks, tests, CI and releases

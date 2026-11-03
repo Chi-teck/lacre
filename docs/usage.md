@@ -48,7 +48,7 @@ depend on them.
 
 ## Options
 
-The options of `build`:
+The options of `build`; `style-guide` takes only `--theme` and `--help`:
 
 | Option         | Value       | Default                      | Effect                                                                                       |
 |----------------|-------------|------------------------------|----------------------------------------------------------------------------------------------|
@@ -75,13 +75,27 @@ Before the command, the only options are `--help` (or `-h`) and `--version`: `la
     | lacre build > notes.html
   ```
 
+## Style guide
+
+`lacre style-guide` prints the style guide of the theme in use: what the input can use, such as a framework and its
+classes, and what the page already puts around the input. The theme's author writes it in Markdown for whoever writes
+the input, often an AI agent, and lacre prints it as it is. Read it before writing input for a theme:
+
+```bash
+lacre style-guide
+```
+
+It picks the theme as `build` does, from `--theme` or else `LACRE_THEME`, so the plain call describes the theme that
+`lacre build` uses. It reads no input, so it runs at a terminal too. A theme with no style guide makes it fail with exit
+code 2; the built-in theme has one. [Themes](themes.md#style-guide) tells how to write one.
+
 ## Exit codes
 
-| Code | When                                                                                                                                                       |
-|------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0    | The page was written, or the usage or version was printed                                                                                                  |
-| 1    | Reading standard input or writing standard output failed                                                                                                   |
-| 2    | The tool was called wrongly: no command, an unknown command, a bad option, an argument, a terminal or another character device as input, or a broken theme |
+| Code | When                                                                                                                                                                                                       |
+|------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0    | The page or the style guide was written, or the usage or version was printed                                                                                                                               |
+| 1    | Reading standard input or writing standard output failed                                                                                                                                                   |
+| 2    | The tool was called wrongly: no command, an unknown command, a bad option, an argument, a terminal or another character device as input, a broken theme or, for `style-guide`, a theme with no style guide |
 
 ## Known limits
 

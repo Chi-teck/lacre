@@ -32,6 +32,10 @@ import (
 // line of 80 monospace characters fits the 48rem column, and pre-wrap and
 // break-word wrap longer lines instead of cutting them off.
 //
+// style-guide.md is its style guide, which lacre style-guide prints. It
+// describes what page.gohtml and style.css give the input, so a change there
+// that an input's author would notice changes the guide too.
+//
 //go:embed theme
 var builtinTheme embed.FS
 
@@ -59,6 +63,10 @@ var mediaTypes = map[string]string{
 // errThemePath is the error for a path given to include or dataURI that breaks
 // the rule on paths in a theme.
 var errThemePath = errors.New(`a path in a theme is names joined by /, with no \ or : and no empty, . or .. name`)
+
+// errNoStyleGuide is what styleGuide gives for a theme without a
+// style-guide.md.
+var errNoStyleGuide = errors.New("no style guide: style-guide.md does not exist")
 
 // theme is an open theme: its files and its parsed page.gohtml.
 type theme struct {
@@ -114,6 +122,22 @@ func (th *theme) Close() {
 	if th.root != nil {
 		_ = th.root.Close()
 	}
+}
+
+// styleGuide gives the theme's style-guide.md as it is. The file is not a
+// template: a {{ in it is plain text. It is read like page.gohtml, so os.Root
+// keeps a symbolic link from leading out of a user theme. Only a file that does
+// not exist gives errNoStyleGuide; any other error names style-guide.md and
+// comes without its *fs.PathError.
+func (th *theme) styleGuide() ([]byte, error) {
+	b, err := fs.ReadFile(th.fsys, "style-guide.md")
+	switch {
+	case errors.Is(err, fs.ErrNotExist):
+		return nil, errNoStyleGuide
+	case err != nil:
+		return nil, fmt.Errorf("style-guide.md: %w", stripPath(err))
+	}
+	return b, nil
 }
 
 // include gives the file at name as it is. The file is not a template: a {{

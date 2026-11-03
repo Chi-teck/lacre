@@ -53,7 +53,14 @@ func wantPage(t *testing.T, dir, input string, args []string, want string) {
 // other systems.
 func wantThemeError(t *testing.T, dir, msg, sys string) {
 	t.Helper()
-	stdout, stderr, code := lacreTheme(dir, "Hello world!\n", "build")
+	wantThemeErrorArgs(t, []string{"build"}, dir, msg, sys)
+}
+
+// wantThemeErrorArgs is wantThemeError with args as the command line instead
+// of build.
+func wantThemeErrorArgs(t *testing.T, args []string, dir, msg, sys string) {
+	t.Helper()
+	stdout, stderr, code := lacreTheme(dir, "Hello world!\n", args...)
 	if code != 2 {
 		t.Errorf("the exit code is %d, want 2", code)
 	}
@@ -70,6 +77,32 @@ func wantThemeError(t *testing.T, dir, msg, sys string) {
 	if want += sys + "\n"; stderr != want {
 		t.Errorf("standard error is %q, want %q", stderr, want)
 	}
+}
+
+// wantStyleGuide checks that lacre style-guide with the theme in dir and args
+// gave want, with exit code 0 and nothing on standard error.
+func wantStyleGuide(t *testing.T, dir string, args []string, want string) {
+	t.Helper()
+	stdout, stderr, code := lacreTheme(dir, "", append([]string{"style-guide"}, args...)...)
+	if code != 0 {
+		t.Errorf("the exit code is %d, want 0", code)
+	}
+	if stderr != "" {
+		t.Errorf("standard error is %q, want nothing", stderr)
+	}
+	if stdout != want {
+		t.Errorf("standard output is %q, want %q", stdout, want)
+	}
+}
+
+// builtinStyleGuide gives the built-in theme's style-guide.md.
+func builtinStyleGuide(t *testing.T) string {
+	t.Helper()
+	b, err := fs.ReadFile(builtinTheme, "theme/style-guide.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
 }
 
 // The four values, each on a line of its own. The body is the input between
@@ -256,11 +289,11 @@ func TestThemeBroken(t *testing.T) {
 	}
 }
 
-// A broken theme stops lacre before the terminal check and before it reads
-// standard input, with one line and no usage. With --theme, it is that
-// directory that is opened, not LACRE_THEME's. A mistake elsewhere on the
-// command line is reported before any theme is opened, and --help and
-// --version do not open one.
+// A broken theme stops either command with one line and no usage, before the
+// terminal check and before build reads standard input; style-guide does
+// neither. With --theme, it is that directory that is opened, not
+// LACRE_THEME's. A mistake elsewhere on the command line is reported before any
+// theme is opened, and --help and --version do not open one.
 func TestThemeOrder(t *testing.T) {
 	const input = "Hello world!\n"
 	missing := filepath.Join(t.TempDir(), "missing")
@@ -271,6 +304,8 @@ func TestThemeOrder(t *testing.T) {
 	}{
 		{missing, []string{"build"}},
 		{other, []string{"build", "--theme", missing}},
+		{missing, []string{"style-guide"}},
+		{other, []string{"style-guide", "--theme", missing}},
 	} {
 		for _, terminal := range []bool{false, true} {
 			stdin := strings.NewReader(input)
@@ -314,6 +349,17 @@ func TestThemeOrder(t *testing.T) {
 			stderr: usageErr("build takes no arguments; it reads standard input"),
 			code:   2,
 		},
+		{args: []string{"style-guide", "--theme", missing, "--help"}, stdout: usage},
+		{
+			args:   []string{"style-guide", "--theme", missing, "--bogus"},
+			stderr: usageErr("flag provided but not defined: -bogus"),
+			code:   2,
+		},
+		{
+			args:   []string{"style-guide", "--theme", missing, "extra"},
+			stderr: usageErr("style-guide takes no arguments; name the theme with --theme"),
+			code:   2,
+		},
 	} {
 		stdout, stderr, code := lacreTheme(missing, input, c.args...)
 		if stdout != c.stdout || stderr != c.stderr || code != c.code {
@@ -353,6 +399,128 @@ func TestThemeOption(t *testing.T) {
 			wantPage(t, c.themeDir, input, c.args, c.want)
 		})
 	}
+}
+
+// The style guide comes out as written, byte for byte: a carriage return,
+// invalid UTF-8 and no final line break stay, and a {{ in it is plain text.
+// The template is not run, or its include of a missing file would fail. A
+// symbolic link that stays inside the theme works.
+func TestStyleGuide(t *testing.T) {
+	const guide = "# Guide\r\n\n{{.Title}} & <b>\n\xff"
+	dir := writeTheme(t, map[string]string{
+		"page.gohtml":    `{{include "missing.css"}}`,
+		"style-guide.md": guide,
+	})
+	wantStyleGuide(t, dir, nil, guide)
+
+	t.Run("symbolic link in", func(t *testing.T) {
+		dir := writeTheme(t, map[string]string{"page.gohtml": "{{.Body}}", "docs/guide.md": guide})
+		if err := os.Symlink(filepath.Join("docs", "guide.md"), filepath.Join(dir, "style-guide.md")); err != nil {
+			t.Skip(err)
+		}
+		wantStyleGuide(t, dir, nil, guide)
+	})
+}
+
+// style-guide picks the theme as build does: --theme wins over LACRE_THEME,
+// whose directory is then not opened, an empty --theme gives the built-in
+// theme, and the last --theme wins. TestThemeOption covers the rest, through
+// the same themeOption.
+func TestStyleGuideTheme(t *testing.T) {
+	const guideA, guideB = "Guide A\n", "Guide B\n"
+	a := writeTheme(t, map[string]string{"page.gohtml": "A {{.Body}}", "style-guide.md": guideA})
+	b := writeTheme(t, map[string]string{"page.gohtml": "B {{.Body}}", "style-guide.md": guideB})
+	missing := filepath.Join(t.TempDir(), "missing")
+	builtin := builtinStyleGuide(t)
+	cases := []struct {
+		name     string
+		themeDir string // the value of LACRE_THEME
+		args     []string
+		want     string
+	}{
+		{"LACRE_THEME", a, nil, guideA},
+		{"over LACRE_THEME", a, []string{"--theme", b}, guideB},
+		{"empty with =", a, []string{"--theme="}, builtin},
+		{"last one empty", a, []string{"--theme", b, "--theme="}, builtin},
+		{"last one a theme", a, []string{"--theme=", "--theme", b}, guideB},
+		{"missing LACRE_THEME", missing, []string{"--theme", b}, guideB},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			wantStyleGuide(t, c.themeDir, c.args, c.want)
+		})
+	}
+}
+
+// Only a style-guide.md that does not exist is no style guide, and that is one
+// line that says so. Any other error in reading it fails as a broken theme
+// does and names style-guide.md, so that a symbolic link out of the theme
+// never counts as no style guide, even when its target does not exist. The
+// theme is opened first, so a broken page.gohtml fails as it does for build.
+func TestStyleGuideErrors(t *testing.T) {
+	outside := filepath.Join(t.TempDir(), "guide.md")
+	if err := os.WriteFile(outside, []byte("# Secret\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	args := []string{"style-guide"}
+	const noGuide = "no style guide: style-guide.md does not exist"
+
+	t.Run("no style-guide.md", func(t *testing.T) {
+		dir := writeTheme(t, map[string]string{"page.gohtml": "{{.Body}}"})
+		wantThemeErrorArgs(t, args, dir, noGuide, "")
+	})
+	t.Run("dangling symbolic link in", func(t *testing.T) {
+		dir := writeTheme(t, map[string]string{"page.gohtml": "{{.Body}}"})
+		if err := os.Symlink("missing.md", filepath.Join(dir, "style-guide.md")); err != nil {
+			t.Skip(err)
+		}
+		wantThemeErrorArgs(t, args, dir, noGuide, "")
+	})
+	for _, c := range []struct{ name, target string }{
+		{"symbolic link out", outside},
+		{"symbolic link out to a missing file", filepath.Join(t.TempDir(), "missing.md")},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			dir := writeTheme(t, map[string]string{"page.gohtml": "{{.Body}}"})
+			if err := os.Symlink(c.target, filepath.Join(dir, "style-guide.md")); err != nil {
+				t.Skip(err)
+			}
+			wantThemeErrorArgs(t, args, dir, "style-guide.md: ", "path escapes from parent")
+		})
+	}
+	t.Run("directory", func(t *testing.T) {
+		dir := writeTheme(t, map[string]string{"page.gohtml": "{{.Body}}", "style-guide.md/guide.md": "# Guide\n"})
+		wantThemeErrorArgs(t, args, dir, "style-guide.md: ", "is a directory")
+	})
+	t.Run("unreadable", func(t *testing.T) {
+		dir := writeTheme(t, map[string]string{"page.gohtml": "{{.Body}}", "style-guide.md": "# Guide\n"})
+		guide := filepath.Join(dir, "style-guide.md")
+		if err := os.Chmod(guide, 0); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := os.ReadFile(guide); err == nil {
+			t.Skip("the file can still be read, as on Windows or as root")
+		}
+		wantThemeErrorArgs(t, args, dir, "style-guide.md: ", "permission denied")
+	})
+	t.Run("broken page.gohtml", func(t *testing.T) {
+		dir := writeTheme(t, map[string]string{"page.gohtml": "<p>\n{{foo}}\n"})
+		wantThemeErrorArgs(t, args, dir, `page.gohtml:2: function "foo" not defined`, "")
+	})
+	t.Run("same as build", func(t *testing.T) {
+		for _, dir := range []string{
+			filepath.Join(t.TempDir(), "missing"),
+			writeTheme(t, map[string]string{"style.css": "p {}"}),
+			writeTheme(t, map[string]string{"page.gohtml": "<p>\n{{foo}}\n"}),
+		} {
+			_, buildErr, buildCode := lacreTheme(dir, "Hello world!\n", "build")
+			_, guideErr, guideCode := lacreTheme(dir, "Hello world!\n", "style-guide")
+			if guideErr != buildErr || guideCode != buildCode {
+				t.Errorf("theme %s: style-guide gave %q and exit code %d, build %q and %d",
+					dir, guideErr, guideCode, buildErr, buildCode)
+			}
+		}
+	})
 }
 
 // An empty LACRE_THEME gives the built-in page.

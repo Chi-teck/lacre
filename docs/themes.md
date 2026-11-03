@@ -23,6 +23,7 @@ that needs a given theme should name it with `--theme`.
 ```
 my-theme/
 ├── page.gohtml        the template; the only file a theme must have
+├── style-guide.md     what to write for the theme; optional
 ├── style.css
 ├── logo.svg
 └── fonts/
@@ -72,7 +73,7 @@ with the files above:
 ```
 
 The built-in theme, in [`internal/app/theme/`](../internal/app/theme), is a working example: its `page.gohtml` and
-`style.css` give the page lacre builds without a theme.
+`style.css` give the page lacre builds without a theme, and its `style-guide.md` describes that page.
 
 - **Paths** in `include` and `dataURI` are names joined by `/` on every system, Windows included: `fonts/inter.woff2`,
   never `fonts\inter.woff2`. No name may be empty, `.` or `..`, and a path may not hold `\` or `:`.
@@ -121,3 +122,44 @@ lacre build --theme= < snippet.html > page.html
 
 `--theme=` is the same in every shell, `cmd.exe` and PowerShell included; write it rather than `--theme ''`, which
 older PowerShell drops (see [Windows](windows.md)). This has not been checked on a Windows machine yet.
+
+## Style guide
+
+A theme can hold a `style-guide.md` next to its `page.gohtml`: a Markdown file in which you tell whoever writes the
+input, often an AI agent, how to write for your theme. `lacre style-guide` prints it as it is, for the theme that
+`--theme` or `LACRE_THEME` picks, as `lacre build` does:
+
+```bash
+lacre style-guide --theme "$HOME/themes/my-theme"
+```
+
+The file is not a template: a `{{` in it is printed as written, so a guide can quote template syntax. It is optional,
+and a theme without one still builds pages. Only `lacre style-guide` fails then, with exit code 2 and this line on
+standard error, rather than with stand-in text that would pass a guess off as your word:
+
+```
+lacre: theme /home/me/themes/my-theme: no style guide: style-guide.md does not exist
+```
+
+`style-guide.md` is read like the theme's other files, from its directory only. A symbolic link that leads out of the
+theme, a `style-guide.md` that is a directory or one that cannot be read fails as a broken theme does. The command also
+reads and parses `page.gohtml`, and fails if the template does not parse, so that nobody writes input for a page that
+cannot be built. It does not run the template, so it does not check the files that `include` and `dataURI` read.
+
+There is no required format. A guide could cover:
+
+- **The framework and its exact version,** first, if the theme brings one: Bootstrap 5.3.3, not just Bootstrap. An
+  agent knows the common frameworks already and often cannot follow a link, being offline or without a web tool, so the
+  name and version tell it more than a link would. A link to the framework's documentation is for people, and serves
+  them better than a list of every class.
+- **The theme's own classes,** and what each one is for.
+- **What the page already puts around the input,** such as a header, navigation or a heading, so that the input does
+  not repeat it.
+- **The colour scheme,** such as a dark background, so that the input does not bring colours that clash with it.
+- **What the input should avoid,** such as markup that the theme's styles do not handle.
+
+The built-in theme's [`style-guide.md`](../internal/app/theme/style-guide.md) is an example.
+
+**A style guide is text an agent acts on,** written by whoever wrote the theme. A downloaded theme can already put any
+script into its pages, but its style guide can also give instructions to an agent that has a shell. Read the style
+guide of a downloaded theme before an agent does.
