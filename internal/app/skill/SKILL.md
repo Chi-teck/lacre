@@ -38,7 +38,7 @@ the project's own layout.
    can switch. If it fails with "no style guide", write plain HTML with no classes, and still build the page with lacre.
 2. Write the content as an HTML snippet that uses what the guide offers, with no `<html>`, `<head>` or `<body>` of its
    own and nothing the page already has, such as a header. Pipe it in, or put it in a temporary file outside the
-   user's project.
+   user's project, unless the page is likely to change: see "Changing a page".
 3. Build the page, with a `--title` and with `--lang` set to the language of the content:
 
    ```bash
@@ -54,6 +54,22 @@ read as markup. So escape plain text first, `&` to `&amp;` and then `<` to `&lt;
 `<pre>` when its line breaks and spacing matter, as in a log or code.
 
 `lacre --help` describes every option.
+
+## Changing a page
+
+When the user is likely to come back with changes, as with a report whose figures will be updated, write the content
+to a file next to the page instead of piping it in or using a temporary file, and build the page from that file:
+
+```bash
+lacre build --title 'Quarterly report' --lang en < report.src.html > report.html
+```
+
+To change the page, edit that file and run the same command again.
+
+Every page keeps its content between the comments `<!-- lacre:begin -->` and `<!-- lacre:end -->`, and the rest comes
+from the theme. So without a content file, read and edit only what is between the markers, not the whole page, whose
+head and styles would crowd out the task. To build the page again from that content, such as in another theme, leave
+the markers out, since lacre adds them, and pass the same `--title`, `--lang` and `--head` values as before.
 
 ## Adding styles and scripts
 
