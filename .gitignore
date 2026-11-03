@@ -13,6 +13,9 @@
 # Editors and IDEs.
 .idea/
 
+# Browser automation — playwright-cli writes console logs and page snapshots here.
+/.playwright-cli/
+
 # Agent instructions and local working notes.
 /.claude/
 /local/
