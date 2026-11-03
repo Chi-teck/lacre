@@ -1,17 +1,24 @@
 # Themes
 
 A theme replaces the built-in page with your own: your layout, a framework such as Bootstrap, your own fonts or a dark
-colour scheme. It is a directory that holds a `page.gohtml` and the files it uses. Set `LACRE_THEME` to the directory,
-and `lacre build` uses it:
+colour scheme. It is a directory that holds a `page.gohtml` and the files it uses. Name the directory with `--theme`:
+
+```bash
+lacre build --theme "$HOME/themes/my-theme" < snippet.html > page.html
+```
+
+Or set `LACRE_THEME` to it, and `lacre build` uses it without `--theme`:
 
 ```bash
 export LACRE_THEME="$HOME/themes/my-theme"
 echo 'Hello world!' | lacre build > hello-world.html
 ```
 
-A relative path is relative to the current directory, so a shell profile should set an absolute one. When `LACRE_THEME`
-is unset or empty, lacre uses its built-in theme. Nothing on the command line shows the theme, so the same command can
-give a different page where the variable is not set, such as in a cron job or in CI.
+A relative path is relative to the current directory, so a shell profile should set an absolute one. `--theme` wins
+over `LACRE_THEME`, and given more than once, the last one wins. An empty `--theme`, or no `--theme` and an unset or
+empty `LACRE_THEME`, gives the built-in theme. With only the variable, nothing on the command line shows the theme, so
+the same command can give a different page where the variable is not set, such as in a cron job or in CI: a script
+that needs a given theme should name it with `--theme`.
 
 ```
 my-theme/
@@ -106,20 +113,11 @@ the system's settings, so that the same theme gives the same bytes on every mach
 
 `.ico` has two types in common use: `image/vnd.microsoft.icon` is the registered one, and browsers accept both.
 
-To build one page with the built-in theme while `LACRE_THEME` is set, empty the variable for that command. In Unix
-shells:
+To build one page with the built-in theme while `LACRE_THEME` is set, give an empty `--theme`:
 
 ```bash
-LACRE_THEME= lacre build < snippet.html > page.html
+lacre build --theme= < snippet.html > page.html
 ```
 
-`cmd.exe` and PowerShell have no form for one command. In `cmd.exe`, `set LACRE_THEME=` lasts for the rest of the
-session, and this covers one command:
-
-```bat
-cmd /c "set LACRE_THEME=& lacre build < snippet.html > page.html"
-```
-
-The `&` comes right after the `=`: a space before it sets the variable to a space, which lacre takes for a theme path.
-In PowerShell, `Remove-Item Env:LACRE_THEME` lasts for the rest of the session. These Windows forms have not been
-checked on a Windows machine yet.
+`--theme=` is the same in every shell, `cmd.exe` and PowerShell included; write it rather than `--theme ''`, which
+older PowerShell drops (see [Windows](windows.md)). This has not been checked on a Windows machine yet.

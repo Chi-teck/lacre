@@ -257,38 +257,101 @@ func TestThemeBroken(t *testing.T) {
 }
 
 // A broken theme stops lacre before the terminal check and before it reads
-// standard input. --help and --version do not open the theme.
+// standard input, with one line and no usage. With --theme, it is that
+// directory that is opened, not LACRE_THEME's. A mistake elsewhere on the
+// command line is reported before any theme is opened, and --help and
+// --version do not open one.
 func TestThemeOrder(t *testing.T) {
 	const input = "Hello world!\n"
 	missing := filepath.Join(t.TempDir(), "missing")
-	for _, terminal := range []bool{false, true} {
-		stdin := strings.NewReader(input)
-		var stdout, stderr bytes.Buffer
-		code := run([]string{"build"}, missing, stdin, &stdout, &stderr, func() bool { return terminal })
-		if code != 2 {
-			t.Errorf("terminal %v: the exit code is %d, want 2", terminal, code)
-		}
-		if want := "lacre: theme " + missing + ": "; !strings.HasPrefix(stderr.String(), want) {
-			t.Errorf("terminal %v: standard error is %q, want it to start with %q", terminal, stderr.Bytes(), want)
-		}
-		if stdin.Len() != len(input) {
-			t.Errorf("terminal %v: lacre read standard input", terminal)
+	other := writeTheme(t, map[string]string{"page.gohtml": "{{.Body}}"})
+	for _, c := range []struct {
+		themeDir string
+		args     []string
+	}{
+		{missing, []string{"build"}},
+		{other, []string{"build", "--theme", missing}},
+	} {
+		for _, terminal := range []bool{false, true} {
+			stdin := strings.NewReader(input)
+			var stdout, stderr bytes.Buffer
+			code := run(c.args, c.themeDir, stdin, &stdout, &stderr, func() bool { return terminal })
+			if code != 2 {
+				t.Errorf("lacre %q, terminal %v: the exit code is %d, want 2", c.args, terminal, code)
+			}
+			if stdout.Len() != 0 {
+				t.Errorf("lacre %q, terminal %v: standard output is %q, want nothing", c.args, terminal, stdout.Bytes())
+			}
+			want := "lacre: theme " + missing + ": "
+			if s := stderr.String(); !strings.HasPrefix(s, want) || strings.Index(s, "\n") != len(s)-1 {
+				t.Errorf("lacre %q, terminal %v: standard error is %q, want one line that starts with %q",
+					c.args, terminal, s, want)
+			}
+			if stdin.Len() != len(input) {
+				t.Errorf("lacre %q, terminal %v: lacre read standard input", c.args, terminal)
+			}
 		}
 	}
 
+	usageErr := func(msg string) string { return "lacre: " + msg + "\n\n" + usage }
 	versionLine := "lacre " + buildVersion() + "\n"
 	for _, c := range []struct {
-		args []string
-		want string
+		args           []string
+		stdout, stderr string
+		code           int
 	}{
-		{[]string{"--help"}, usage},
-		{[]string{"build", "--help"}, usage},
-		{[]string{"--version"}, versionLine},
+		{args: []string{"--help"}, stdout: usage},
+		{args: []string{"build", "--help"}, stdout: usage},
+		{args: []string{"--version"}, stdout: versionLine},
+		{args: []string{"build", "--theme", missing, "--help"}, stdout: usage},
+		{
+			args:   []string{"build", "--theme", missing, "--bogus"},
+			stderr: usageErr("flag provided but not defined: -bogus"),
+			code:   2,
+		},
+		{
+			args:   []string{"build", "--theme", missing, "page.html"},
+			stderr: usageErr("build takes no arguments; it reads standard input"),
+			code:   2,
+		},
 	} {
 		stdout, stderr, code := lacreTheme(missing, input, c.args...)
-		if stdout != c.want || stderr != "" || code != 0 {
-			t.Errorf("lacre %q: got %q, %q and exit code %d, want %q, nothing and 0", c.args, stdout, stderr, code, c.want)
+		if stdout != c.stdout || stderr != c.stderr || code != c.code {
+			t.Errorf("lacre %q: got %q, %q and exit code %d, want %q, %q and %d",
+				c.args, stdout, stderr, code, c.stdout, c.stderr, c.code)
 		}
+	}
+}
+
+// --theme names the theme and wins over LACRE_THEME, whose directory is then
+// not opened, so a missing one does no harm. An empty --theme, given with = or
+// as an argument of its own, gives the built-in page, and the last --theme
+// wins.
+func TestThemeOption(t *testing.T) {
+	const input = "Hello world!\n"
+	a := writeTheme(t, map[string]string{"page.gohtml": "A {{.Body}}"})
+	b := writeTheme(t, map[string]string{"page.gohtml": "B {{.Body}}"})
+	missing := filepath.Join(t.TempDir(), "missing")
+	pageB := "B <!-- lacre:begin -->\n" + input + "<!-- lacre:end -->"
+	builtin := string(builtinPage(t, []byte(input), "", "", nil))
+	cases := []struct {
+		name     string
+		themeDir string // the value of LACRE_THEME
+		args     []string
+		want     string
+	}{
+		{"over LACRE_THEME", a, []string{"--theme", b}, pageB},
+		{"empty LACRE_THEME", "", []string{"--theme", b}, pageB},
+		{"empty with =", a, []string{"--theme="}, builtin},
+		{"empty argument", a, []string{"--theme", ""}, builtin},
+		{"last one empty", a, []string{"--theme", b, "--theme="}, builtin},
+		{"last one a theme", a, []string{"--theme=", "--theme", b}, pageB},
+		{"missing LACRE_THEME", missing, []string{"--theme", b}, pageB},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			wantPage(t, c.themeDir, input, c.args, c.want)
+		})
 	}
 }
 

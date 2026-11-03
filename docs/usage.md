@@ -50,12 +50,13 @@ depend on them.
 
 The options of `build`:
 
-| Option         | Value      | Default    | Effect                                                                                       |
-|----------------|------------|------------|----------------------------------------------------------------------------------------------|
-| `--title TEXT` | any string | `Untitled` | The page title                                                                               |
-| `--lang CODE`  | any string | none       | The page language, the `lang` attribute of `<html>`; without it there is no `lang` attribute |
-| `--head HTML`  | any string | none       | HTML added at the end of `<head>`, as it is; can be repeated                                 |
-| `--help`, `-h` | none       |            | Print the usage to standard output and exit with 0                                           |
+| Option         | Value       | Default                      | Effect                                                                                       |
+|----------------|-------------|------------------------------|----------------------------------------------------------------------------------------------|
+| `--title TEXT` | any string  | `Untitled`                   | The page title                                                                               |
+| `--lang CODE`  | any string  | none                         | The page language, the `lang` attribute of `<html>`; without it there is no `lang` attribute |
+| `--head HTML`  | any string  | none                         | HTML added at the end of `<head>`, as it is; can be repeated                                 |
+| `--theme DIR`  | a directory | `LACRE_THEME`, else built-in | The [theme](themes.md) directory; empty, as in `--theme=`, for the built-in theme            |
+| `--help`, `-h` | none        |                              | Print the usage to standard output and exit with 0                                           |
 
 Before the command, the only options are `--help` (or `-h`) and `--version`: `lacre --help` prints the usage and
 `lacre --version` the version.

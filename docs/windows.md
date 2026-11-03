@@ -31,6 +31,7 @@ cmd /c "lacre build < snippet.html > page.html"
 
 Known limit: Windows PowerShell 5.1 can mangle non-ASCII text in pipes and in `>`. PowerShell 7.4 and later and
 `cmd /c` do not. PowerShell before 7.3 also drops double quotes inside arguments passed to programs, which breaks
-`--head` values with attributes, such as `--head '<meta name="description" content="A test page" />'`.
+`--head` values with attributes, such as `--head '<meta name="description" content="A test page" />'`. It drops empty
+arguments, such as `''`, too, so an empty `--theme` is written `--theme=`.
 
 The PowerShell details on this page have not been checked on a Windows machine yet.

@@ -32,10 +32,13 @@ Options for build:
   --lang CODE    page language, such as "en" (default: none)
   --head HTML    HTML to add at the end of <head>, as it is; can be
                  given more than once
+  --theme DIR    a theme directory, whose page.gohtml is the page
+                 template; empty, as in --theme=, for the built-in
+                 page (default: LACRE_THEME)
 
 Environment:
-  LACRE_THEME    a theme directory, whose page.gohtml is the page template;
-                 when unset or empty, lacre uses its built-in page
+  LACRE_THEME    a theme directory, used without --theme; when unset
+                 or empty, lacre uses its built-in page
 
 Examples:
   echo 'Hello world!' | lacre build > hello-world.html
@@ -65,9 +68,9 @@ func Main() {
 // page, the usage or the version was written, 1 when reading standard input or
 // writing standard output failed, 2 when lacre was called wrongly or the theme
 // is broken. themeDir is the value of LACRE_THEME, empty for the built-in
-// theme; it is a parameter so that the tests cannot pick up a LACRE_THEME set
-// where they run. isTerminal says whether standard input is a terminal: Main
-// passes stdinIsTerminal, the tests a fake.
+// theme, and a --theme replaces it; it is a parameter so that the tests cannot
+// pick up a LACRE_THEME set where they run. isTerminal says whether standard
+// input is a terminal: Main passes stdinIsTerminal, the tests a fake.
 //
 // Go's flag package reads the options: first those before the command, then
 // those of build. Its output goes to io.Discard, which silences both the
@@ -93,8 +96,9 @@ func run(args []string, themeDir string, stdin io.Reader, stdout, stderr io.Writ
 		return commandLineError(stderr, fmt.Sprintf("unknown command %q", top.Arg(0)))
 	}
 
-	// The values go to buildPage as given, which treats an empty one as not
-	// given. The usage strings are empty: flag never prints them.
+	// The values of --title, --lang and --head go to buildPage as given, which
+	// treats an empty one as not given. The usage strings are empty: flag never
+	// prints them.
 	build := flag.NewFlagSet("build", flag.ContinueOnError)
 	build.SetOutput(io.Discard)
 	var title, lang string
@@ -103,6 +107,13 @@ func run(args []string, themeDir string, stdin io.Reader, stdout, stderr io.Writ
 	build.StringVar(&lang, "lang", "", "")
 	build.Func("head", "", func(v string) error {
 		heads = append(heads, v)
+		return nil
+	})
+	// --theme replaces themeDir only when it is given, so that it wins over
+	// LACRE_THEME and an empty one gives the built-in theme, the rule the
+	// variable follows. The last one wins, as with --title and --lang.
+	build.Func("theme", "", func(v string) error {
+		themeDir = v
 		return nil
 	})
 	switch err := build.Parse(top.Args()[1:]); {
@@ -153,7 +164,8 @@ func commandLineError(stderr io.Writer, msg string) int {
 // error loses only its "template: " prefix. It gives exit code 2.
 //
 // An empty dir is the built-in theme, which has no directory to name. Naming
-// it keeps whoever changes it from looking for the mistake in LACRE_THEME.
+// it keeps whoever changes it from looking for the mistake in --theme or
+// LACRE_THEME.
 func themeError(stderr io.Writer, dir string, err error) int {
 	name := "theme " + dir
 	if dir == "" {

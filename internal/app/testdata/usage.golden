@@ -13,10 +13,13 @@ Options for build:
   --lang CODE    page language, such as "en" (default: none)
   --head HTML    HTML to add at the end of <head>, as it is; can be
                  given more than once
+  --theme DIR    a theme directory, whose page.gohtml is the page
+                 template; empty, as in --theme=, for the built-in
+                 page (default: LACRE_THEME)
 
 Environment:
-  LACRE_THEME    a theme directory, whose page.gohtml is the page template;
-                 when unset or empty, lacre uses its built-in page
+  LACRE_THEME    a theme directory, used without --theme; when unset
+                 or empty, lacre uses its built-in page
 
 Examples:
   echo 'Hello world!' | lacre build > hello-world.html

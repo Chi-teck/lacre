@@ -9,11 +9,12 @@
 // refers to anything outside the page. It is a single file that works offline,
 // unless what you put in it refers to outside files.
 //
-// The environment variable LACRE_THEME names a theme: a directory with a
-// page.gohtml, the page template in Go's text/template syntax, and the files
-// that template brings into the page. A relative path is relative to the
-// current directory. When the variable is unset or empty, lacre uses its
-// built-in theme.
+// The --theme option of build names a theme: a directory with a page.gohtml,
+// the page template in Go's text/template syntax, and the files that template
+// brings into the page. A relative path is relative to the current directory.
+// Without --theme, the environment variable LACRE_THEME names it. An empty
+// --theme, or no --theme and an unset or empty LACRE_THEME, gives the built-in
+// theme.
 //
 // The input goes into the page as HTML, as it is, and is not cleaned: a script
 // in the input runs when the page is opened, so use lacre only on input you

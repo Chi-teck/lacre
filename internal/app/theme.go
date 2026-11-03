@@ -12,10 +12,10 @@ import (
 	"text/template"
 )
 
-// builtinTheme is the theme in theme/, the one lacre uses when LACRE_THEME is
-// unset or empty. It is a theme like any other: openTheme reads it with the
-// same code as a user theme, and it uses only the four values and the two
-// functions that every theme has.
+// builtinTheme is the theme in theme/, the one lacre uses with an empty
+// --theme, or without --theme when LACRE_THEME is unset or empty. It is a
+// theme like any other: openTheme reads it with the same code as a user theme,
+// and it uses only the four values and the two functions that every theme has.
 //
 // Its page.gohtml has a generator tag that names the tool and has no version,
 // and meta tags that end with " />". The page holds no comment other than the

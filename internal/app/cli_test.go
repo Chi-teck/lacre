@@ -98,6 +98,7 @@ func TestCommandLine(t *testing.T) {
 		{args: []string{"build", "--title"}, stderr: usageErr("flag needs an argument: -title"), code: 2},
 		{args: []string{"build", "page.html"}, stderr: usageErr(noArgs), code: 2},
 		{args: []string{"--title", "X", "build"}, stderr: usageErr("flag provided but not defined: -title"), code: 2},
+		{args: []string{"--theme", "X", "build"}, stderr: usageErr("flag provided but not defined: -theme"), code: 2},
 		{args: []string{"build", "--", "page.html"}, stderr: usageErr(noArgs), code: 2},
 		{args: []string{"--help"}, stdout: usage},
 		{args: []string{"-h"}, stdout: usage},
@@ -111,6 +112,7 @@ func TestCommandLine(t *testing.T) {
 		{args: []string{"build", "--title", ""}, stdout: page("Untitled", "")},
 		{args: []string{"build", "--lang", ""}, stdout: page("", "")},
 		{args: []string{"build", "--head"}, stderr: usageErr("flag needs an argument: -head"), code: 2},
+		{args: []string{"build", "--theme"}, stderr: usageErr("flag needs an argument: -theme"), code: 2},
 		{args: []string{"--version", "--help"}, stdout: usage}, // --help wins
 		{args: []string{"build", "--head", "a", "--head", "b"}, stdout: page("", "", "a", "b")},
 	}
