@@ -34,4 +34,21 @@ Known limit: Windows PowerShell 5.1 can mangle non-ASCII text in pipes and in `>
 `--head` values with attributes, such as `--head '<meta name="description" content="A test page" />'`. It drops empty
 arguments, such as `''`, too, so an empty `--theme` is written `--theme=`.
 
+`lacre install-skill` takes Windows paths, and its success line names the file with `\`, as in
+`lacre: wrote .agents\skills\lacre\SKILL.md`. `cmd.exe` and PowerShell before 7.6 do not expand `~`, so lacre rejects
+`lacre install-skill ~\.claude\skills` there with exit code 2. Name the home directory instead; this works in every
+version. In `cmd.exe`:
+
+```bat
+lacre install-skill "%USERPROFILE%\.claude\skills"
+```
+
+In PowerShell:
+
+```powershell
+lacre install-skill "$HOME\.claude\skills"
+```
+
+lacre writes the skill itself, so the limit of Windows PowerShell 5.1 on `>` does not affect it.
+
 The PowerShell details on this page have not been checked on a Windows machine yet.

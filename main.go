@@ -11,6 +11,14 @@
 // the page already puts around the input. A theme without one makes the
 // command fail.
 //
+// The install-skill command writes a skill for AI agents, such as Claude Code
+// or Codex, into the skills directory it is given, as lacre/SKILL.md in it.
+// The skill tells an agent when to use lacre and how: read the style guide,
+// write the content, build the page. The command creates the directories it
+// needs and replaces an existing copy, so running it again after an upgrade
+// updates the skill; edits made to the copy are lost. A ~ that the shell did
+// not expand, as in a quoted '~/.claude/skills', makes the command fail.
+//
 // With the built-in theme, the page is self-contained: nothing lacre adds to it
 // refers to anything outside the page. It is a single file that works offline,
 // unless what you put in it refers to outside files.

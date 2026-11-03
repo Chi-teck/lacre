@@ -1,7 +1,8 @@
-# The built-in theme under internal/app/theme/ is built into the program, and
-# the golden files under internal/app/testdata/ are compared byte for byte with
-# the page it gives, which has \n line endings on every platform. Windows git
-# checks out CRLF by default, which would put \r into a program built from a
-# Windows checkout and fail those tests on the windows runner, for a difference
+# The built-in theme under internal/app/theme/ and the agent skill under
+# internal/app/skill/ are built into the program, and the golden files under
+# internal/app/testdata/ are compared byte for byte with the page it gives,
+# which has \n line endings on every platform. Windows git checks out CRLF by
+# default, which would put \r into a program built from a Windows checkout and
+# fail those tests and TestSkillNoCR on the windows runner, for a difference
 # that is not in the repository, so pin the working tree to LF.
 * text=auto eol=lf

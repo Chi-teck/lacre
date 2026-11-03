@@ -57,7 +57,7 @@ depend on them.
 
 ## Options
 
-The options of `build`; `style-guide` takes only `--theme` and `--help`:
+The options of `build`; `style-guide` takes only `--theme` and `--help`, and `install-skill` only `--help`:
 
 | Option         | Value       | Default                      | Effect                                                                                       |
 |----------------|-------------|------------------------------|----------------------------------------------------------------------------------------------|
@@ -101,13 +101,53 @@ It picks the theme as `build` does, from `--theme` or else `LACRE_THEME`, so the
 `lacre build` uses. It reads no input, so it runs at a terminal too. A theme with no style guide makes it fail with exit
 code 2; the built-in theme has one. [Themes](themes.md#style-guide) tells how to write one.
 
+## Agent skill
+
+An AI agent uses lacre only if it knows about it; otherwise it writes the whole page by hand. `lacre install-skill DIR`
+writes a skill, a file that tells the agent when to use lacre and how: read the style guide, write the content, build
+the page. Agents read skills from directories of their own:
+
+```bash
+lacre install-skill .agents/skills       # for this project, for agents that read .agents/skills
+lacre install-skill ~/.claude/skills     # for every project of this user, in Claude Code
+```
+
+`DIR` is the directory that holds the agent's skills, not the skill's own: the skill goes into `DIR/lacre/SKILL.md`.
+lacre creates the directories it needs, so the command works in a fresh project too. It replaces an existing
+`SKILL.md`, so running it again after an upgrade updates the skill, and edits made to the installed copy are lost;
+other files in the `lacre` directory stay. The `version` in the skill's front matter names the lacre that wrote it, so
+that a copy left behind by an older lacre can be spotted.
+
+On success, lacre prints a line on standard error that names the file it wrote, so a mistyped path shows there:
+
+```
+lacre: wrote .agents/skills/lacre/SKILL.md
+```
+
+The shell expands `~` only when it is not quoted, and `cmd.exe` and PowerShell before 7.6 not at all. lacre does not
+expand it either, so rather than create a directory named `~` in the current directory, it rejects a `DIR` whose first
+name is `~`, as in `lacre install-skill '~/.claude/skills'`, with exit code 2. Name the home directory instead, as in
+`lacre install-skill "$HOME/.claude/skills"`; on Windows, see [Windows](windows.md). The command reads no input, so it
+runs at a terminal too.
+
+Where common agents read skills, checked on 2026-11-03:
+
+| Agent       | Project                            | User                                   |
+|-------------|------------------------------------|----------------------------------------|
+| Claude Code | `.claude/skills`                   | `~/.claude/skills`                     |
+| Codex       | `.agents/skills`                   | `~/.agents/skills`                     |
+| Gemini CLI  | `.agents/skills`, `.gemini/skills` | `~/.agents/skills`, `~/.gemini/skills` |
+
+GitHub Copilot, Cursor and opencode read `.agents/skills` and `~/.agents/skills` too. Claude Code reads neither, so to
+set up Claude Code and another agent, run the command once for each agent's directory.
+
 ## Exit codes
 
-| Code | When                                                                                                                                                                                                       |
-|------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0    | The page or the style guide was written, or the usage or version was printed                                                                                                                               |
-| 1    | Reading standard input or writing standard output failed                                                                                                                                                   |
-| 2    | The tool was called wrongly: no command, an unknown command, a bad option, an argument, a terminal or another character device as input, a broken theme or, for `style-guide`, a theme with no style guide |
+| Code | When                                                                                                                                                                                                                                                                   |
+|------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0    | The page or the style guide was written, the skill was installed, or the usage or version was printed                                                                                                                                                                  |
+| 1    | Reading standard input or writing standard output failed, or `install-skill` could not create a directory or write the skill                                                                                                                                           |
+| 2    | The tool was called wrongly: no command, an unknown command, a bad option, a missing, empty or extra argument, a `~` that the shell did not expand, a terminal or another character device as input, a broken theme or, for `style-guide`, a theme with no style guide |
 
 ## Known limits
 

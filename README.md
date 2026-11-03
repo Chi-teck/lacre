@@ -39,9 +39,17 @@ only on input you trust.
 
 `lacre style-guide` prints what the theme in use offers to whoever writes the input, such as an AI agent.
 
+`lacre install-skill DIR` installs a skill that teaches an AI agent to use lacre:
+
+```bash
+lacre install-skill .claude/skills    # for Claude Code
+lacre install-skill .agents/skills    # for Codex and other agents that read it
+```
+
 ## Documentation
 
-- [Usage](docs/usage.md): the page lacre builds, the options, the input, the style guide, exit codes and known limits
+- [Usage](docs/usage.md): the page lacre builds, the options, the input, the style guide, the agent skill, exit codes
+  and known limits
 - [Themes](docs/themes.md): replacing the built-in page with your own layout, styles and fonts, and a style guide for
   whoever writes the input
 - [Windows](docs/windows.md): `cmd.exe`, PowerShell and Git Bash

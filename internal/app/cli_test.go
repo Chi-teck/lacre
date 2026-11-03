@@ -77,8 +77,11 @@ func TestBuildPassThrough(t *testing.T) {
 
 // The command line: for each call, standard output, standard error and the
 // exit code. The last two cases add the order of the --help and --version
-// checks, and several --head values through the command line.
+// checks, and several --head values through the command line. The calls run in
+// an empty directory, which stays empty: none of them writes a file, not even
+// an install-skill call with a bad option.
 func TestCommandLine(t *testing.T) {
+	t.Chdir(t.TempDir())
 	usageErr := func(msg string) string { return "lacre: " + msg + "\n\n" + usage }
 	page := func(title, lang string, heads ...string) string {
 		return string(builtinPage(t, []byte("Hello world!\n"), title, lang, heads))
@@ -87,6 +90,9 @@ func TestCommandLine(t *testing.T) {
 	guide := builtinStyleGuide(t)
 	const noArgs = "build takes no arguments; it reads standard input"
 	const noGuideArgs = "style-guide takes no arguments; name the theme with --theme"
+	const skillArgs = "install-skill takes one argument: the skills directory"
+	const skillTilde = "the skills directory for install-skill starts with ~, which the shell did not expand; " +
+		"name the home directory instead, such as $HOME or %USERPROFILE%"
 
 	cases := []struct {
 		args           []string
@@ -121,6 +127,16 @@ func TestCommandLine(t *testing.T) {
 		{args: []string{"style-guide", "guide.md"}, stderr: usageErr(noGuideArgs), code: 2},
 		{args: []string{"style-guide", "--theme"}, stderr: usageErr("flag needs an argument: -theme"), code: 2},
 		{args: []string{"style-guide", "--title", "X"}, stderr: usageErr("flag provided but not defined: -title"), code: 2},
+		{args: []string{"install-skill"}, stderr: usageErr(skillArgs), code: 2},
+		{args: []string{"install-skill", "a", "b"}, stderr: usageErr(skillArgs), code: 2},
+		{args: []string{"install-skill", ""}, stderr: usageErr("the skills directory for install-skill is empty"), code: 2},
+		{args: []string{"install-skill", "~"}, stderr: usageErr(skillTilde), code: 2},
+		{args: []string{"install-skill", filepath.Join("~", ".claude", "skills")}, stderr: usageErr(skillTilde), code: 2},
+		{args: []string{"install-skill", "./~/skills"}, stderr: usageErr(skillTilde), code: 2},
+		{args: []string{"install-skill", "--help"}, stdout: usage},
+		{args: []string{"install-skill", "-h"}, stdout: usage},
+		{args: []string{"install-skill", "--bogus", "skills"}, stderr: usageErr("flag provided but not defined: -bogus"), code: 2},
+		{args: []string{"install-skill", "--theme", "X", "skills"}, stderr: usageErr("flag provided but not defined: -theme"), code: 2},
 		{args: []string{"--version", "--help"}, stdout: usage}, // --help wins
 		{args: []string{"build", "--head", "a", "--head", "b"}, stdout: page("", "", "a", "b")},
 	}
@@ -135,6 +151,13 @@ func TestCommandLine(t *testing.T) {
 		if code != c.code {
 			t.Errorf("lacre %q: the exit code is %d, want %d", c.args, code, c.code)
 		}
+	}
+	entries, err := os.ReadDir(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range entries {
+		t.Errorf("a call wrote %s, want nothing", e.Name())
 	}
 }
 
@@ -195,8 +218,10 @@ func TestWriteFails(t *testing.T) {
 }
 
 // A terminal check that says "terminal". The hint is written out here rather
-// than taken from terminalHint, so that the test pins its words.
+// than taken from terminalHint, so that the test pins its words. The calls run
+// in an empty directory, where install-skill writes its skill.
 func TestTerminal(t *testing.T) {
+	t.Chdir(t.TempDir())
 	const input = "Hello world!\n"
 	const hint = "lacre: standard input is a terminal; pipe or redirect the input, for example:\n" +
 		"  echo 'Hello world!' | lacre build > hello-world.html\n"
@@ -213,6 +238,8 @@ func TestTerminal(t *testing.T) {
 		{args: []string{"build", "--help"}, stdout: usage},
 		// style-guide reads no input, so a terminal is no error.
 		{args: []string{"style-guide"}, stdout: guide},
+		// Nor does install-skill.
+		{args: []string{"install-skill", "skills"}, stderr: "lacre: wrote " + filepath.Join("skills", "lacre", "SKILL.md") + "\n"},
 	}
 	for _, c := range cases {
 		stdin := strings.NewReader(input)
