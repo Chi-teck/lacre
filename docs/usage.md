@@ -1,34 +1,31 @@
 # Usage
 
-`lacre build` reads all of standard input and writes the page to standard output. Messages go to standard error.
+lacre has three commands:
+
+- [`lacre build`](#building-a-page) builds a page from standard input.
+- [`lacre style-guide`](#style-guide) prints the style guide of the theme in use, for whoever writes the input.
+- [`lacre install-skill DIR`](#agent-skill) installs a skill that teaches AI agents to use lacre.
+
+Before a command, the only options are `--help` (or `-h`) and `--version`: `lacre --help` prints the usage and
+`lacre --version` the version. Messages, such as errors, go to standard error.
+
+## Building a page
+
+`lacre build` reads all of standard input and writes the page to standard output:
 
 ```bash
 lacre build --title 'My page' --lang en < snippet.html > page.html
 ```
 
-The page is a complete HTML document. Its head has the UTF-8 charset, a viewport tag so that the page fits a phone's
-screen, a generator tag that names lacre, the title (`Untitled` without `--title`) and a small built-in stylesheet. It
-fixes what browsers draw badly by default: a centered column that is easy to read, in the system fonts at a slightly
-larger size, with lists, quotations, tables, code, forms and disclosures that are easy to tell apart, long lines in
-`<pre>` that scroll inside their box, and images and videos that shrink to fit the column. The page is light;
-`lacre style-guide` lists what the stylesheet does and how an input can follow a dark system setting. Its body is your
-input, as it is, between two markers. That is the page of the built-in theme, and a [theme](themes.md) of your own can
-change all of it. With the built-in theme, nothing lacre adds refers to anything outside the page, so the page is a
-single file that works offline, unless what you put in it refers to outside files. The same input, options and theme
-always give the same bytes.
+It takes the options below; `style-guide` takes only `--theme` and `--help`, and `install-skill` only `--help`.
 
-lacre writes `<!-- lacre:begin -->` and a line break before the input and `<!-- lacre:end -->` right after it, with no
-line break added, so that the input can be found in the page. lacre does not check for the same text elsewhere: in the
-input, in a `--head` value or in a theme. With `echo 'Hello world!' | lacre build`, the end of the page is:
-
-```html
-<body>
-<!-- lacre:begin -->
-Hello world!
-<!-- lacre:end -->
-</body>
-</html>
-```
+| Option         | Value       | Default                      | Effect                                                                                       |
+|----------------|-------------|------------------------------|----------------------------------------------------------------------------------------------|
+| `--title TEXT` | any string  | `Untitled`                   | The page title                                                                               |
+| `--lang CODE`  | any string  | none                         | The page language, the `lang` attribute of `<html>`; without it there is no `lang` attribute |
+| `--head HTML`  | any string  | none                         | HTML added at the end of `<head>`, as it is; can be repeated                                 |
+| `--theme DIR`  | a directory | `LACRE_THEME`, else built-in | The [theme](themes.md) directory; empty, as in `--theme=`, for the built-in theme            |
+| `--help`, `-h` | none        |                              | Print the usage to standard output and exit with 0                                           |
 
 Without `--lang` the page declares no language, since a wrong one is worse than none. Setting it helps screen readers
 and satisfies accessibility checkers.
@@ -55,20 +52,37 @@ lacre build --head "$(cat head.html)" < snippet.html > page.html
 A `--head` value that refers to outside files, such as a `<link>` to a stylesheet or a `<script src>`, makes the page
 depend on them.
 
-## Options
+## The page
 
-The options of `build`; `style-guide` takes only `--theme` and `--help`, and `install-skill` only `--help`:
+The page is a complete HTML document. With the built-in theme, its head has the UTF-8 charset, a viewport tag so that
+the page fits a phone's screen, a generator tag that names lacre, the title, a small stylesheet and then the `--head`
+values. Its body is your input, as it is, between two [markers](#markers). A [theme](themes.md) of your own can change
+everything around the input.
 
-| Option         | Value       | Default                      | Effect                                                                                       |
-|----------------|-------------|------------------------------|----------------------------------------------------------------------------------------------|
-| `--title TEXT` | any string  | `Untitled`                   | The page title                                                                               |
-| `--lang CODE`  | any string  | none                         | The page language, the `lang` attribute of `<html>`; without it there is no `lang` attribute |
-| `--head HTML`  | any string  | none                         | HTML added at the end of `<head>`, as it is; can be repeated                                 |
-| `--theme DIR`  | a directory | `LACRE_THEME`, else built-in | The [theme](themes.md) directory; empty, as in `--theme=`, for the built-in theme            |
-| `--help`, `-h` | none        |                              | Print the usage to standard output and exit with 0                                           |
+The built-in stylesheet fixes what browsers draw badly by default: a centered column that is easy to read, in the system
+fonts at a slightly larger size, with lists, quotations, tables, code, forms and disclosures that are easy to tell
+apart, long lines in `<pre>` that scroll inside their box, and images and videos that shrink to fit the column. The page
+is light; `lacre style-guide` lists what the stylesheet does and how an input can follow a dark system setting.
 
-Before the command, the only options are `--help` (or `-h`) and `--version`: `lacre --help` prints the usage and
-`lacre --version` the version.
+With the built-in theme, nothing lacre adds refers to anything outside the page, so the page is a single file that works
+offline, unless what you put in it refers to outside files. The same input, options and theme always give the same
+bytes.
+
+### Markers
+
+lacre writes `<!-- lacre:begin -->` and a line break before the input and `<!-- lacre:end -->` right after it, with no
+line break added, so that a program can find the input in the page. lacre does not check whether the same comments
+appear elsewhere: in the input, in a `--head` value or in a theme. With `echo 'Hello world!' | lacre build`, the end of
+the page is:
+
+```html
+<body>
+<!-- lacre:begin -->
+Hello world!
+<!-- lacre:end -->
+</body>
+</html>
+```
 
 ## The input is HTML
 
@@ -86,6 +100,16 @@ Before the command, the only options are `--help` (or `-h`) and `--version`: `la
 
   With the built-in theme a long line in a `<pre>` scrolls sideways. For text with a paragraph on each line, make it
   wrap with `--head '<style>pre { white-space: pre-wrap }</style>'`.
+
+## Input from a terminal
+
+When standard input is a terminal, `lacre build` does not wait for typed input: it prints a hint and exits with 2. On
+Linux, macOS and other Unix systems, lacre takes any character device other than `/dev/null` for a terminal, so it
+refuses `/dev/zero` or `/dev/urandom` the same way.
+
+Known limits: in Git Bash (mintty), lacre cannot tell that standard input is a terminal, so it waits for input, as `cat`
+does. Ctrl+D ends the input. On systems that are neither Unix nor Windows, such as Plan 9, lacre does not check at all
+and waits the same way.
 
 ## Style guide
 
@@ -126,9 +150,9 @@ lacre: wrote .agents/skills/lacre/SKILL.md
 
 The shell expands `~` only when it is not quoted, and `cmd.exe` and PowerShell before 7.6 not at all. lacre does not
 expand it either, so rather than create a directory named `~` in the current directory, it rejects a `DIR` whose first
-name is `~`, as in `lacre install-skill '~/.claude/skills'`, with exit code 2. Name the home directory instead, as in
-`lacre install-skill "$HOME/.claude/skills"`; on Windows, see [Windows](windows.md). The command reads no input, so it
-runs at a terminal too.
+part is `~`, as in `lacre install-skill '~/.claude/skills'`, with exit code 2. Name the home directory instead, as in
+`lacre install-skill "$HOME/.claude/skills"`; on Windows, see [Windows](windows.md#installing-the-agent-skill). The
+command reads no input, so it runs at a terminal too.
 
 Where common agents read skills, checked on 2026-11-03:
 
@@ -143,16 +167,9 @@ set up Claude Code and another agent, run the command once for each agent's dire
 
 ## Exit codes
 
-| Code | When                                                                                                                                                                                                                                                                   |
-|------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0    | The page or the style guide was written, the skill was installed, or the usage or version was printed                                                                                                                                                                  |
-| 1    | Reading standard input or writing standard output failed, or `install-skill` could not create a directory or write the skill                                                                                                                                           |
-| 2    | The tool was called wrongly: no command, an unknown command, a bad option, a missing, empty or extra argument, a `~` that the shell did not expand, a terminal or another character device as input, a broken theme or, for `style-guide`, a theme with no style guide |
-
-## Known limits
-
-When standard input is a terminal, `lacre build` does not wait for typed input: it prints a hint and exits with 2. On
-Linux, macOS and other Unix systems, lacre takes any character device other than `/dev/null` for a terminal, so it
-refuses `/dev/zero` or `/dev/urandom` the same way. In Git Bash (mintty), lacre cannot tell that standard input is a
-terminal, so it waits for input, as `cat` does. Ctrl+D ends the input. On systems that are neither Unix nor Windows,
-such as Plan 9, lacre does not check at all and waits the same way.
+- `0`: the page or the style guide was written, the skill was installed, or the usage or the version was printed.
+- `1`: reading standard input or writing standard output failed, or `install-skill` could not create a directory or
+  write the skill.
+- `2`: lacre was called wrongly: no command, an unknown command, a bad option, or a missing, empty or extra argument;
+  a `~` that the shell did not expand; a terminal or another character device as input; a broken theme or, for
+  `style-guide`, a theme with no style guide.

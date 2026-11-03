@@ -10,9 +10,10 @@ metadata:
 
 # Lacre
 
-The lacre command wraps the content of a page, an HTML snippet, into a complete HTML page. Everything around the
-content comes from a theme that the user picks: the document's structure, its head and its styles. So do not write
-standalone HTML pages from scratch: write only the content, what the reader sees, and let lacre build the page.
+The [lacre](https://github.com/Chi-teck/lacre) command wraps the content of a page, an HTML snippet, into a complete
+HTML page. Everything around the content comes from a theme that the user picks: the document's structure, its head and
+its styles. So do not write standalone HTML pages from scratch: write only the content, what the reader sees, and let
+lacre build the page.
 
 HTML that is part of a website's or an app's source, such as its templates or components, is not for lacre: it follows
 the project's own layout.
@@ -62,9 +63,9 @@ theme's styles give way to yours. Keep your styles few, and restyle the whole pa
 up for one page undoes the reasons above.
 
 `--head` adds HTML at the end of the page's head and can be given more than once, as in
-`--head '<style>.chart { height: 20rem }</style>'`. Put styles there, not in the content. Put a script at the end of
-the content, or in `--head` as a `<script type="module">`: both run once the content is there. For more than a line,
-write the HTML to a temporary file and pass `--head "$(cat head.html)"`.
+`--head '<style>.chart { height: 20rem }</style>'`. Put styles there, not in the content. Put a script at the end of the
+content, or in `--head` as a `<script type="module">…</script>`: both run once the content is there. For more than a
+line, write the HTML to a temporary file and pass `--head "$(cat head.html)"`.
 
 Anything you add that loads by URL, such as a stylesheet, script, image or font, makes the page depend on it. For a
 page that should be a single file that works offline, inline it instead: a library's code in `<style>` or `<script>`,

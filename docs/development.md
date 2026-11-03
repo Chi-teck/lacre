@@ -10,8 +10,8 @@ task release:snapshot   # build the release archives into dist/, published nowhe
 ```
 
 `task check` also needs golangci-lint, and `task release:snapshot` needs GoReleaser. The golden files in
-`internal/app/testdata` fix the expected output. The binaries of `task release:snapshot` print a snapshot version, such
-as `lacre v0.0.0-SNAPSHOT-<commit>` before the first tag.
+`internal/app/testdata` hold the expected output, which the tests compare byte for byte. The binaries of
+`task release:snapshot` print a snapshot version, such as `lacre v0.0.0-SNAPSHOT-<commit>` before the first tag.
 
 On every push to a branch and on every pull request, continuous integration (CI) runs the checks of `task check` and the
 build on Linux, and the tests and the build on Windows. No job runs on macOS: the macOS build is cross-compiled and
