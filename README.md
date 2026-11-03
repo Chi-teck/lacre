@@ -14,6 +14,16 @@ echo 'Hello world!' | lacre build > hello-world.html
 
 Opening `hello-world.html` in a browser shows "Hello world!" on a complete page.
 
+## Why use it
+
+HTML is a good format for documents such as reports and notes. Any program can write it, any browser can open it,
+wide tables and code can scroll instead of being cut to fit a page, and a script can make it interactive. But a complete
+page needs a doctype, a head and styles, which are often longer than the content itself.
+
+lacre is made mainly for AI agents. Asked for a report, an agent often spends more time and tokens on the look of the
+page than on the report's data. With lacre, the page comes from a theme and the agent writes only the content, so pages
+are cheaper and faster to make, share one look, and all change when you change the theme.
+
 ## Install
 
 Ready-made binaries for Linux, macOS and Windows, on amd64 and arm64, will be on the
