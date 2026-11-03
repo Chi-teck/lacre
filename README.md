@@ -1,4 +1,4 @@
-# lacre
+# Lacre
 
 [![CI](https://github.com/Chi-teck/lacre/actions/workflows/ci.yml/badge.svg)](https://github.com/Chi-teck/lacre/actions/workflows/ci.yml)
 
@@ -24,8 +24,9 @@ are cheaper and faster to make and share one look, set in one place: the theme.
 
 ## Install
 
-There is no release yet. From the first one on, the [releases page](https://github.com/Chi-teck/lacre/releases) will
-have ready-made binaries for Linux, macOS and Windows, on amd64 and arm64.
+Download the archive for your system from the [releases page](https://github.com/Chi-teck/lacre/releases): Linux,
+macOS or Windows, on amd64 or arm64. It holds a single binary, `lacre` (`lacre.exe` on Windows), to put in a
+directory on your `PATH`. `checksums.txt` lists the SHA-256 of each archive.
 
 With Go 1.26 or later, install it from source:
 
