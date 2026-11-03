@@ -55,7 +55,7 @@
 </p>
 
 <blockquote cite="https://example.com/">
-  <p>A block quotation, long enough to wrap, to see its indent and any border or colour on both of its lines.</p>
+  <p>A block quotation, long enough to wrap, to see its indent and any border or color on both of its lines.</p>
 </blockquote>
 
 <hr>
@@ -95,7 +95,7 @@
 <p>A block of code, indented with a tab, with a line that must wrap or scroll rather than widen the page:</p>
 
 <pre><code>func main() {
-	fmt.Println("A long line that must wrap inside the column rather than make the page scroll sideways on a narrow screen.")
+	fmt.Println("A long line that must wrap or scroll inside its box rather than make the page scroll sideways on a narrow screen.")
 }
 </code></pre>
 
@@ -178,63 +178,66 @@ Hello, world!
 <form>
   <fieldset>
     <legend>Text</legend>
-    <p><label>Text, required <input name="text" type="text" placeholder="A placeholder" required></label></p>
-    <p><label>Email <input name="email" type="email" value="someone@example.com"></label></p>
-    <p><label>Password <input name="password" type="password" value="password"></label></p>
-    <p><label>URL <input name="url" type="url"></label></p>
-    <p><label>Telephone <input name="tel" type="tel"></label></p>
-    <p><label>Search <input name="search" type="search"></label></p>
-    <p><label>Disabled <input name="disabled" type="text" value="Disabled" disabled></label></p>
-    <p><label>Read-only <input name="readonly" type="text" value="Read-only" readonly></label></p>
-    <p><label>Text area<br><textarea name="textarea" rows="3" cols="40">Several lines
-of text.</textarea></label></p>
+    <p><label for="text-required">Text, required</label> <input id="text-required" name="text" type="text" placeholder="A placeholder" required></p>
+    <p><label for="email">Email</label> <input id="email" name="email" type="email" value="someone@example.com"></p>
+    <p><label for="password">Password</label> <input id="password" name="password" type="password" value="password"></p>
+    <p><label for="url">URL</label> <input id="url" name="url" type="url"></p>
+    <p><label for="tel">Telephone</label> <input id="tel" name="tel" type="tel"></p>
+    <p><label for="search">Search</label> <input id="search" name="search" type="search"></p>
+    <p><label for="disabled">Disabled</label> <input id="disabled" name="disabled" type="text" value="Disabled" disabled></p>
+    <p><label for="readonly">Read-only</label> <input id="readonly" name="readonly" type="text" value="Read-only" readonly></p>
+    <p><label>Inside its label <input name="wrapped" type="text" value="Not bold"></label></p>
+    <p><label for="textarea">Text area</label><br><textarea id="textarea" name="textarea" rows="3" cols="40">Several lines
+of text.</textarea></p>
   </fieldset>
 
   <fieldset>
     <legend>Other inputs</legend>
-    <p><label>Number <input name="number" type="number" value="42"></label></p>
-    <p><label>Range <input name="range" type="range" value="30"></label></p>
-    <p><label>Date <input name="date" type="date" value="2026-11-03"></label></p>
-    <p><label>Time <input name="time" type="time" value="09:30"></label></p>
-    <p><label>Date and time <input name="datetime" type="datetime-local" value="2026-11-03T09:30"></label></p>
-    <p><label>Month <input name="month" type="month" value="2026-11"></label></p>
-    <p><label>Week <input name="week" type="week" value="2026-W45"></label></p>
-    <p><label>Colour <input name="color" type="color" value="#4a7bd0"></label></p>
-    <p><label>File <input name="file" type="file"></label></p>
+    <p><label for="number">Number</label> <input id="number" name="number" type="number" value="42"></p>
+    <p><label for="range">Range</label> <input id="range" name="range" type="range" value="30"></p>
+    <p><label for="date">Date</label> <input id="date" name="date" type="date" value="2026-11-03"></p>
+    <p><label for="time">Time</label> <input id="time" name="time" type="time" value="09:30"></p>
+    <p><label for="datetime">Date and time</label> <input id="datetime" name="datetime" type="datetime-local" value="2026-11-03T09:30"></p>
+    <p><label for="month">Month</label> <input id="month" name="month" type="month" value="2026-11"></p>
+    <p><label for="week">Week</label> <input id="week" name="week" type="week" value="2026-W45"></p>
+    <p><label for="color">Color</label> <input id="color" name="color" type="color" value="#4a7bd0"></p>
+    <p><label for="file">File</label> <input id="file" name="file" type="file"></p>
   </fieldset>
 
   <fieldset>
     <legend>Choices</legend>
     <p>
-      <label>Select
-        <select name="select">
-          <option>An option</option>
-          <option disabled>A disabled option</option>
-          <optgroup label="A group"><option>An option in a group</option></optgroup>
-        </select>
-      </label>
+      <label for="select">Select</label>
+      <select id="select" name="select">
+        <option>An option</option>
+        <option disabled>A disabled option</option>
+        <optgroup label="A group"><option>An option in a group</option></optgroup>
+      </select>
     </p>
     <p>
-      <label>Multiple select<br>
-        <select name="multiple" multiple size="3">
-          <option selected>One</option> <option>Two</option> <option selected>Three</option> <option>Four</option>
-        </select>
-      </label>
+      <label for="multiple">Multiple select</label><br>
+      <select id="multiple" name="multiple" multiple size="3">
+        <option selected>One</option> <option>Two</option> <option selected>Three</option> <option>Four</option>
+      </select>
     </p>
     <p>
-      <label>Text with suggestions <input name="suggestion" type="text" list="suggestions"></label>
+      <label for="suggestion">Text with suggestions</label> <input id="suggestion" name="suggestion" type="text" list="suggestions">
       <datalist id="suggestions"><option value="Linux"></option><option value="macOS"></option></datalist>
     </p>
     <p>
-      <label><input type="checkbox" name="checkbox"> A checkbox</label>
-      <label><input type="checkbox" name="checkbox" checked> Checked</label>
-      <label><input type="checkbox" name="checkbox" disabled> Disabled</label>
+      <input id="checkbox-unchecked" type="checkbox" name="checkbox"> <label for="checkbox-unchecked">A checkbox</label>
+      <input id="checkbox-checked" type="checkbox" name="checkbox" checked> <label for="checkbox-checked">Checked</label>
+      <input id="checkbox-disabled" type="checkbox" name="checkbox" disabled> <label for="checkbox-disabled">Disabled</label>
+    </p>
+    <p>
+      <label><input type="checkbox" name="checkbox"> Inside its label</label>
+      <label for="checkbox-after">Before its checkbox</label> <input id="checkbox-after" type="checkbox" name="checkbox">
     </p>
     <fieldset>
       <legend>Radio buttons, in a nested fieldset</legend>
-      <label><input type="radio" name="radio" checked> Checked</label>
-      <label><input type="radio" name="radio"> Not checked</label>
-      <label><input type="radio" name="radio" disabled> Disabled</label>
+      <input id="radio-checked" type="radio" name="radio" checked> <label for="radio-checked">Checked</label>
+      <input id="radio-unchecked" type="radio" name="radio"> <label for="radio-unchecked">Not checked</label>
+      <input id="radio-disabled" type="radio" name="radio" disabled> <label for="radio-disabled">Disabled</label>
     </fieldset>
   </fieldset>
 
@@ -246,14 +249,14 @@ of text.</textarea></label></p>
 </form>
 
 <p>
-  <label>Progress <progress value="70" max="100">70%</progress></label>
-  <label>Unknown progress <progress>Working</progress></label>
+  <label for="progress">Progress</label> <progress id="progress" value="70" max="100">70%</progress>
+  <label for="progress-unknown">Unknown progress</label> <progress id="progress-unknown">Working</progress>
 </p>
 
 <p>
-  <label>Meter, optimum <meter value="0.2" low="0.5" high="0.8" optimum="0">20%</meter></label>
-  <label>Warning <meter value="0.6" low="0.5" high="0.8" optimum="0">60%</meter></label>
-  <label>Bad <meter value="0.9" low="0.5" high="0.8" optimum="0">90%</meter></label>
+  <label for="meter-optimum">Meter, optimum</label> <meter id="meter-optimum" value="0.2" low="0.5" high="0.8" optimum="0">20%</meter>
+  <label for="meter-warning">Warning</label> <meter id="meter-warning" value="0.6" low="0.5" high="0.8" optimum="0">60%</meter>
+  <label for="meter-bad">Bad</label> <meter id="meter-bad" value="0.9" low="0.5" high="0.8" optimum="0">90%</meter>
 </p>
 
 <p>An output: <output name="result">72</output>.</p>

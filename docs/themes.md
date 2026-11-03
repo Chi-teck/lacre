@@ -1,7 +1,7 @@
 # Themes
 
 A theme replaces the built-in page with your own: your layout, a framework such as Bootstrap, your own fonts or a dark
-colour scheme. It is a directory that holds a `page.gohtml` and the files it uses. Name the directory with `--theme`:
+color scheme. It is a directory that holds a `page.gohtml` and the files it uses. Name the directory with `--theme`:
 
 ```bash
 lacre build --theme "$HOME/themes/my-theme" < snippet.html > page.html
@@ -155,7 +155,7 @@ There is no required format. A guide could cover:
 - **The theme's own classes,** and what each one is for.
 - **What the page already puts around the input,** such as a header, navigation or a heading, so that the input does
   not repeat it.
-- **The colour scheme,** such as a dark background, so that the input does not bring colours that clash with it.
+- **The color scheme,** such as a dark background, so that the input does not bring colors that clash with it.
 - **What the input should avoid,** such as markup that the theme's styles do not handle.
 
 The built-in theme's [`style-guide.md`](../internal/app/theme/style-guide.md) is an example.

@@ -1,27 +1,148 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="generator" content="Lacre" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="generator" content="Lacre"/>
 <title>Untitled</title>
 <style>
-body {
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 1rem;
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
-  overflow-wrap: break-word;
-}
-pre {
-  font-family: ui-monospace, monospace;
-  font-size: 0.875em;
-  white-space: pre-wrap;
-}
-img, video {
-  max-width: 100%;
-  height: auto;
+@layer lacre {
+  :root {
+    --lacre-text-light: #1f1f1f;
+    --lacre-bg-light: #f3f3f3;
+    --lacre-text-dark: #e5e5e5;
+    --lacre-bg-dark: #1f1f1f;
+    --lacre-border: #8888;
+    --lacre-pre-bg: #8881;
+    --lacre-code-bg: #8882;
+  }
+  html {
+    color: light-dark(var(--lacre-text-light), var(--lacre-text-dark));
+    font-size: 112.5%;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: light-dark(var(--lacre-bg-light), var(--lacre-bg-dark));
+  }
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    text-wrap-style: balance;
+  }
+  ul, ol {
+    padding-inline-start: 2em;
+  }
+  dt {
+    font-weight: bold;
+  }
+  dd {
+    margin-inline-start: 2em;
+  }
+  blockquote, figure {
+    margin-inline: 0;
+  }
+  blockquote {
+    padding-inline-start: 1em;
+    border-inline-start: 0.25em solid var(--lacre-border);
+  }
+  hr {
+    border: 0;
+    border-block-start: 1px solid var(--lacre-border);
+  }
+  pre, code, kbd, samp {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 0.875em;
+  }
+  :is(pre, code, kbd, samp) :is(code, kbd, samp) {
+    font-size: 1em;
+  }
+  pre {
+    padding: 0.5em 0.75em;
+    background: var(--lacre-pre-bg);
+    overflow-x: auto;
+    tab-size: 4;
+  }
+  :is(code, kbd, samp):not(pre *, :is(code, kbd, samp) *) {
+    padding: 0.1em 0.25em;
+    border-radius: 0.25em;
+    background: var(--lacre-code-bg);
+  }
+  kbd:not(pre *, :is(code, kbd, samp) *) {
+    border: 1px solid var(--lacre-border);
+  }
+  sub, sup {
+    line-height: 0;
+  }
+  table {
+    border-collapse: collapse;
+  }
+  table:not([width]) {
+    width: 100%;
+  }
+  :is(thead, tbody, tfoot, table > tr):not([valign]) {
+    vertical-align: top;
+  }
+  :is(th, td) :is(a, code, kbd, samp) {
+    overflow-wrap: anywhere;
+  }
+  th, td {
+    padding: 0.25em 0.5em;
+    border: 1px solid var(--lacre-border);
+  }
+  th:not([align]) {
+    text-align: inherit;
+  }
+  img, svg, video, canvas, audio, iframe, button, input, select, textarea {
+    max-width: 100%;
+  }
+  img, video {
+    height: auto;
+  }
+  label {
+    font-weight: bold;
+  }
+  :is(input[type=checkbox], input[type=radio]) + label {
+    font-weight: inherit;
+  }
+  label:has(> input[type=checkbox], > input[type=radio], + input[type=checkbox], + input[type=radio]) {
+    font-weight: inherit;
+  }
+  button, input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+  }
+  fieldset {
+    min-inline-size: 0;
+  }
+  details {
+    margin-block: 1em;
+    padding: 0.5em 0.75em;
+    border: 1px solid var(--lacre-border);
+    border-radius: 0.25em;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: bold;
+  }
+  details[open] > summary {
+    margin-block-end: 0.5em;
+  }
+  details[open] > summary + * {
+    margin-block-start: 0;
+  }
+  details[open] > :last-child:not(summary) {
+    margin-block-end: 0;
+  }
+  @media print {
+    pre {
+      white-space: pre-wrap;
+    }
+  }
 }
 </style>
 </head>

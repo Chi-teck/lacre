@@ -18,19 +18,57 @@ import (
 // and it uses only the four values and the two functions that every theme has.
 //
 // Its page.gohtml has a generator tag that names the tool and has no version,
-// and meta tags that end with " />". The page holds no comment other than the
-// two markers, no version or date, and nothing that refers outside the page.
-// Its files have LF line endings, which .gitattributes keeps in a Windows
-// checkout too, so the page has them on every system; TestBuiltinThemeNoCR
-// checks it.
+// and meta tags that end with "/>". The include of style.css and .Head end in
+// -}}, which drops the template's line break after them, since the file and
+// each --head value end with their own. The page holds no comment other than
+// the two markers, no version or date, and nothing that refers outside the
+// page. Its files have LF line endings, which .gitattributes keeps in a
+// Windows checkout too, so the page has them on every system;
+// TestBuiltinThemeNoCR checks it.
 //
 // style.css is the page's only styling, and these notes are here because a
-// comment in it would end up in the page. Element selectors only, so that any
-// style the input or a --head value brings wins; system fonts; a centred
-// column; no colours and no rules for print. ui-monospace comes first because
-// browsers shrink text whose only font is monospace to 13 pixels. At 0.875em a
-// line of 80 monospace characters fits the 48rem column, and pre-wrap and
-// break-word wrap longer lines instead of cutting them off.
+// comment in it would end up in the page. It fixes what browsers draw badly by
+// default, such as deep list indents, tables without borders and form controls
+// in a smaller font, and adds little look of its own.
+//
+// Every rule is in the layer lacre, so that any style the input or a --head
+// value brings wins whatever its selectors, a framework's own layers included,
+// since they come later. That lets the rules use compound selectors. None may
+// be !important, which a layer turns around.
+//
+// Presentational attributes in the input, such as align on a cell or width on
+// a table, lose to every rule, a layered one too, so a rule that would hide one
+// skips the elements that have it. vertical-align is set on the row groups,
+// and the browser's own rules pass it down to the rows and cells, so that
+// valign on a row works too. th inherits text-align instead of being centered,
+// so that it lines up with the cells below it and follows align on its row.
+//
+// The font size is a percentage, so that the page follows the reader's default
+// size, and other lengths are in em or rem, so that they grow with it; only
+// thin lines are 1px. Properties that name a side are logical, such as
+// padding-inline-start, so that a right-to-left page mirrors. Borders and the
+// backgrounds of code are a translucent gray, which shows on a light page, a
+// dark one and the input's own colors, so their variables, --lacre-border,
+// --lacre-pre-bg and --lacre-code-bg, need no dark twins. The text and page
+// background colors are the other --lacre-* variables, picked by light-dark()
+// from the scheme the page is drawn in: light, unless the input or a --head
+// value declares color-scheme. The background is on body, not html: the
+// browser paints the root's background over the whole window, so on html it
+// would confine an input's own body background to the column.
+//
+// Monospace fonts come as a list because browsers shrink text whose only font
+// is monospace to 13 pixels. code, kbd and samp get a background only outside
+// a pre and outside one another, so that a key combination or a highlighted
+// line is not a box in a box. Tables fill the column, and code and links in
+// their cells break anywhere, so that a wide table does not widen the page
+// while ordinary words still wrap at spaces. pre scrolls rather than wraps,
+// which would mangle diagrams and indentation, and wraps in print, where a
+// scroll box would be cut off. Form controls take only the font family and
+// size, so that a control inside a bold label keeps its own weight, and the
+// labels of checkboxes and radio buttons keep the weight of the text around
+// them, since a row of bold choices reads heavy. svg gets no height: auto,
+// which would turn a chart drawn at a fixed height and full width into a
+// square.
 //
 // style-guide.md is its style guide, which lacre style-guide prints. It
 // describes what page.gohtml and style.css give the input, so a change there

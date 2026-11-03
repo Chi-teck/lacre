@@ -7,12 +7,15 @@ lacre build --title 'My page' --lang en < snippet.html > page.html
 ```
 
 The page is a complete HTML document. Its head has the UTF-8 charset, a viewport tag so that the page fits a phone's
-screen, a generator tag that names lacre, the title (`Untitled` without `--title`) and a small built-in stylesheet,
-which gives a centred column that is easy to read, the system fonts, long lines in `<pre>` that wrap, and images and
-videos that shrink to fit the column. Its body is your input, as it is, between two markers. That is the page of the
-built-in theme, and a [theme](themes.md) of your own can change all of it. With the built-in theme, nothing lacre adds
-refers to anything outside the page, so the page is a single file that works offline, unless what you put in it refers
-to outside files. The same input, options and theme always give the same bytes.
+screen, a generator tag that names lacre, the title (`Untitled` without `--title`) and a small built-in stylesheet. It
+fixes what browsers draw badly by default: a centered column that is easy to read, in the system fonts at a slightly
+larger size, with lists, quotations, tables, code, forms and disclosures that are easy to tell apart, long lines in
+`<pre>` that scroll inside their box, and images and videos that shrink to fit the column. The page is light;
+`lacre style-guide` lists what the stylesheet does and how an input can follow a dark system setting. Its body is your
+input, as it is, between two markers. That is the page of the built-in theme, and a [theme](themes.md) of your own can
+change all of it. With the built-in theme, nothing lacre adds refers to anything outside the page, so the page is a
+single file that works offline, unless what you put in it refers to outside files. The same input, options and theme
+always give the same bytes.
 
 lacre writes `<!-- lacre:begin -->` and a line break before the input and `<!-- lacre:end -->` right after it, with no
 line break added, so that the input can be found in the page. lacre does not check for the same text elsewhere: in the
@@ -30,11 +33,17 @@ Hello world!
 Without `--lang` the page declares no language, since a wrong one is worse than none. Setting it helps screen readers
 and satisfies accessibility checkers.
 
-`--head` adds HTML at the end of `<head>`, as it is, and can be given more than once. It comes after the built-in
-stylesheet, so a `<style>` added this way overrides its rules:
+`--head` adds HTML at the end of `<head>`, as it is, and can be given more than once. The built-in stylesheet puts
+its rules in a cascade layer, so a `<style>` added this way overrides them, whatever its selectors:
 
 ```bash
 lacre build --head '<style>body { max-width: 60rem }</style>' < snippet.html > page.html
+```
+
+To let the page follow a dark system setting, for an input that sets no colors of its own:
+
+```bash
+lacre build --head '<style>:root { color-scheme: light dark }</style>' < snippet.html > page.html
 ```
 
 To add a file, let the shell read it:
@@ -74,6 +83,9 @@ Before the command, the only options are `--help` (or `-h`) and `--version`: `la
   { echo '<pre>'; sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' notes.txt; echo '</pre>'; } \
     | lacre build > notes.html
   ```
+
+  With the built-in theme a long line in a `<pre>` scrolls sideways. For text with a paragraph on each line, make it
+  wrap with `--head '<style>pre { white-space: pre-wrap }</style>'`.
 
 ## Style guide
 

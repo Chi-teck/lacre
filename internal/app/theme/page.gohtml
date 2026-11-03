@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html{{if .Language}} lang="{{.Language}}"{{end}}>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="generator" content="Lacre" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="generator" content="Lacre"/>
 <title>{{.Title}}</title>
 <style>
-{{include "style.css"}}</style>
-{{.Head}}</head>
+{{include "style.css" -}}
+</style>
+{{.Head -}}
+</head>
 <body>
 {{.Body}}
 </body>
