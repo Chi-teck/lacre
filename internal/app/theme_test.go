@@ -289,11 +289,11 @@ func TestThemeBroken(t *testing.T) {
 	}
 }
 
-// A broken theme stops either command with one line and no usage, before the
-// terminal check and before build reads standard input; style-guide does
-// neither. With --theme, it is that directory that is opened, not
-// LACRE_THEME's. A mistake elsewhere on the command line is reported before any
-// theme is opened, and --help and --version do not open one.
+// A broken theme stops either command with one line, before the terminal check
+// and before build reads standard input; style-guide does neither. With
+// --theme, it is that directory that is opened, not LACRE_THEME's. A mistake
+// elsewhere on the command line is reported before any theme is opened, and
+// --help and --version do not open one.
 func TestThemeOrder(t *testing.T) {
 	const input = "Hello world!\n"
 	missing := filepath.Join(t.TempDir(), "missing")
@@ -328,7 +328,6 @@ func TestThemeOrder(t *testing.T) {
 		}
 	}
 
-	usageErr := func(msg string) string { return "lacre: " + msg + "\n\n" + usage }
 	versionLine := "lacre " + buildVersion() + "\n"
 	for _, c := range []struct {
 		args           []string

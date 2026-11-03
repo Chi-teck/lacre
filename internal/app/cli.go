@@ -14,10 +14,10 @@ import (
 )
 
 // usage is the usage text, written by hand rather than by flag.PrintDefaults.
-// --help and -h, before or after a command, print it to standard output; a
-// command-line error prints it to standard error, after the error line and an
-// empty line, and lacre without a command prints it there alone. A Go raw
-// string drops carriage returns, so its lines end with LF on every system.
+// --help and -h, before or after a command, print it to standard output, and
+// lacre without a command prints it to standard error; a command-line error
+// only points to it (see commandLineError). A Go raw string drops carriage
+// returns, so its lines end with LF on every system.
 const usage = `lacre turns plain text or an HTML snippet into a full HTML page.
 
 Usage:
@@ -282,17 +282,20 @@ func runInstallSkill(args []string, stdout, stderr io.Writer) int {
 }
 
 // commandLineError prints a command-line error to standard error: the line
-// "lacre: <msg>", an empty line and the usage. It gives exit code 2.
+// "lacre: <msg>" and a line that points to lacre --help. It does not print the
+// usage itself, which is long enough to push the error off the top of a
+// terminal; the GNU tools point to their help the same way, as git and go do
+// for an unknown command. It gives exit code 2.
 func commandLineError(stderr io.Writer, msg string) int {
-	_, _ = fmt.Fprintf(stderr, "lacre: %s\n\n%s", msg, usage)
+	_, _ = fmt.Fprintf(stderr, "lacre: %s\nRun 'lacre --help' for the usage.\n", msg)
 	return 2
 }
 
 // themeError prints a theme error to standard error: the line
 // "lacre: theme <dir>: <err>", or "lacre: built-in theme: <err>" when dir is
-// empty, with no usage after it, since the command line was right. A template
-// error loses only its "template: " prefix. It gives exit code 2. For
-// style-guide, a theme without a style guide is a theme error too.
+// empty, with no line about --help after it, since the command line was right.
+// A template error loses only its "template: " prefix. It gives exit code 2.
+// For style-guide, a theme without a style guide is a theme error too.
 //
 // An empty dir is the built-in theme, which has no directory to name. Naming
 // it keeps whoever changes it from looking for the mistake in --theme or

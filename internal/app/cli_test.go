@@ -42,6 +42,11 @@ func lacreTheme(themeDir, input string, args ...string) (stdout, stderr string, 
 	return out.String(), errOut.String(), code
 }
 
+// usageErr is what a command-line error prints to standard error: the error
+// line and a line that points to --help. The hint is written out here, not
+// shared with commandLineError, so that the tests pin its words.
+func usageErr(msg string) string { return "lacre: " + msg + "\nRun 'lacre --help' for the usage.\n" }
+
 // The usage text of lacre --help, against usage.golden.
 func TestUsageGolden(t *testing.T) {
 	stdout, _, _ := lacre("", "--help")
@@ -82,7 +87,6 @@ func TestBuildPassThrough(t *testing.T) {
 // an install-skill call with a bad option.
 func TestCommandLine(t *testing.T) {
 	t.Chdir(t.TempDir())
-	usageErr := func(msg string) string { return "lacre: " + msg + "\n\n" + usage }
 	page := func(title, lang string, heads ...string) string {
 		return string(builtinPage(t, []byte("Hello world!\n"), title, lang, heads))
 	}
@@ -233,7 +237,7 @@ func TestTerminal(t *testing.T) {
 	}{
 		{args: []string{"build"}, stderr: hint, code: 2},
 		// The option error wins over the terminal.
-		{args: []string{"build", "--bogus"}, stderr: "lacre: flag provided but not defined: -bogus\n\n" + usage, code: 2},
+		{args: []string{"build", "--bogus"}, stderr: usageErr("flag provided but not defined: -bogus"), code: 2},
 		// Help typed at a prompt is the commonest real call.
 		{args: []string{"build", "--help"}, stdout: usage},
 		// style-guide reads no input, so a terminal is no error.

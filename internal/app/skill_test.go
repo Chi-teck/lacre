@@ -102,8 +102,8 @@ func TestInstallSkill(t *testing.T) {
 }
 
 // A directory that cannot be created or a skill that cannot be written is one
-// line that names the path, with no usage after it. The directory named is the
-// one that failed, which need not be lacre.
+// line that names the path. The directory named is the one that failed, which
+// need not be lacre.
 func TestInstallSkillErrors(t *testing.T) {
 	t.Run("file in the way", func(t *testing.T) {
 		dir := t.TempDir()
