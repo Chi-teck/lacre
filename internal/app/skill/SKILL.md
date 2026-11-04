@@ -78,6 +78,10 @@ narrower table. The style guide may already offer what you need, such as a class
 theme's styles give way to yours. Keep your styles few, and restyle the whole page only when the user asks: a look made
 up for one page undoes the reasons above.
 
+A theme cannot cover everything, so at times you build markup that the guide does not describe, such as a timeline or
+a chart. Make it look like part of the theme: give it the theme's colors, spacing, fonts and borders, as the guide
+describes them, and use the theme's variables where it has them, rather than picking new ones.
+
 `--head` adds HTML at the end of the page's head and can be given more than once, as in
 `--head '<style>.chart { height: 20rem }</style>'`. Put styles there, not in the content. Put a script at the end of the
 content, or in `--head` as a `<script type="module">…</script>`: both run once the content is there. For more than a
