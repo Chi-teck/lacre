@@ -18,6 +18,9 @@ lacre build the page.
 HTML that is part of a website's or an app's source, such as its templates or components, is not for lacre: it follows
 the project's own layout.
 
+If the `lacre` command is not found, tell the user that lacre is not installed and stop: do not install it yourself or
+write the page by hand. Go on only once the user has installed it or tells you what to do instead.
+
 ## Why not write pages from scratch
 
 - **Cost:** a page's doctype, head and styles are often longer than its content, and writing is the slowest and
